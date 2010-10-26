@@ -51,8 +51,8 @@ use Data::Dumper;
 
 my $config = Config::Auto::parse();
         #print Dumper($config);
-my $git 	= trim($config->{engine-conf}->{git});
-my $mysql 	= trim($config->{engine-conf}->{mysql});
+my $git 	= trim($config->{"engine-conf"}->{git});
+my $mysql 	= trim($config->{"engine-conf"}->{mysql});
 
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
@@ -70,12 +70,12 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
 		next if ($project eq "engine-conf");
 
 		# Loading the project settings
-                my $local_path  = trim($config->{$project}->{local_project_path});
-                my $depth       = trim($config->{$project}->{depth});
-                my $branch      = trim($config->{$project}->{branch});
-                my $user        = trim($config->{$project}->{user});
-                my $server      = trim($config->{$project}->{server});
-                my $git_project = trim($config->{$project}->{git_project});
+                my $local_path  = trim($config->{$project}->{"local_project_path"});
+                my $depth       = trim($config->{$project}->{"depth"});
+                my $branch      = trim($config->{$project}->{"branch"});
+                my $user        = trim($config->{$project}->{"user"});
+                my $server      = trim($config->{$project}->{"server"});
+                my $git_project = trim($config->{$project}->{"git_project"});
 
                 # Is the project destination path exists ?
                 unless (-e $local_path){
@@ -85,7 +85,7 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
                 }
 
                 # Is the project is git initted ?
-                lig_this($buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
+                lig_this(\@buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
                 if (!readdir DIR){
                         # No ! I create it.
                         lig_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
@@ -123,7 +123,7 @@ sub SQLload {
 	my @files = ();
 
         if ($file =~ /.*update.*\.sql$/){
-                lig_this($buffer,  "		Found SQL update file : $file\n");
+                lig_this(\@buffer,  "		Found SQL update file : $file\n");
 		push(@files,$file);
         }
 
