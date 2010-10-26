@@ -3,7 +3,7 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	10.26.2010
-# Version:	0.2
+# Version:	0.3
 # 
 # Usage:	Execute it via crontab or shell prompt, no args
 # 
@@ -57,11 +57,10 @@ my $mysql 	= trim($config->{"engine-conf"}->{mysql});
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
+# Create a buffer for logging message during the script execution.
+my @buffer = ();
+
 {
-
-	# Create a buffer for logging message during the script execution.
-	my @buffer = ();
-
 	# Lets see what project we have to deploy ...
         foreach my $project (keys(%$config)) {
 
@@ -79,59 +78,67 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
                 # Is the project destination path exists ?
                 unless (-e $local_path){
-                        lig_this(\@buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
-			lig_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
+                        log_this(\@buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
+			log_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
                         next;
                 }
 
                 # Is the project is git initted ?
-                lig_this(\@buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
+                log_this(\@buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
                 if (!readdir DIR){
                         # No ! I create it.
-                        lig_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
+                        log_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
                         chdir "$local_path";
-                        lig_this(\@buffer,  "		cd $local_path\n");
-                        lig_this(\@buffer,  "		$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
+                        log_this(\@buffer,  "		cd $local_path\n");
+                        log_this(\@buffer,  "		$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
                         #print `pwd`;
                         if( system("$git clone --depth=$depth -b $branch $user\@$server:$git_project\n") == 0){
-                                lig_this(\@buffer,  "[$project] Project successfully loaded\n");
+                                log_this(\@buffer,  "[$project] Project successfully loaded\n");
                                 # The project is successfully loaded, I search for a database and I load it.
-                                lig_this(\@buffer,  "		Searching for sql file ...\n");
+                                log_this(\@buffer,  "		Searching for sql file ...\n");
                                 find(\&SQLload, "$local_path/$project");
                         }
+			else {
+				log_this(\@buffer,  "[$project] Was not able to load the project. See your git config details.\n");
+			}
 
                 }
                 else {
-                        lig_this(\@buffer,  "[$project] Project still exists, updating it ...\n");
-                        lig_this(\@buffer,  "		cd $local_path\n");
+                        log_this(\@buffer,  "[$project] Project still exists, updating it ...\n");
+                        log_this(\@buffer,  "		cd $local_path\n");
                         chdir "$local_path/$project";
-                        lig_this(\@buffer,  "[$project] Trying to update ...\n");
+                        log_this(\@buffer,  "[$project] Trying to update ...\n");
                         my $status = `$git pull`;
                         chomp($status);
-                        if ($status ne "Already up-to-date."){
-                                find(\&SQLload, "$local_path/$project");
+                        if ($status eq "Already up-to-date."){
+                                log_this(\@buffer,  "[$project] Already up to date.\n");
                         }
-                        else {
-                                lig_this(\@buffer,  "[$project] Already up to date.\n");
-                        }
+			else {
+				if ($? == 0) {
+					find(\&SQLload, "$local_path/$project");
+				}
+				else {
+					log_this(\@buffer,  "[$project] git pull failed : $status");
+				}
+			}
                 }
         }
 }
 
 sub SQLload {
         my $file = $File::Find::name;
-	my @files = ();
 
         if ($file =~ /.*update.*\.sql$/){
-                lig_this(\@buffer,  "		Found SQL update file : $file\n");
-		push(@files,$file);
+                log_this(\@buffer,  "		Found SQL update file : $file\n");
+		
         }
 
-	return @files;
 }
 
 sub loaddb {
         my ($host, $port, $db, $user, $pass, $sql_file) = @_;
+	
+	return system("$mysql --host=$host -P $port -u $user -p$password -D $db < $sql_file");
 }
 
 sub set_permissions {
