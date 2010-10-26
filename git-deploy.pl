@@ -51,8 +51,8 @@ use Data::Dumper;
 
 my $config = Config::Auto::parse();
         #print Dumper($config);
-my $git 	= trim($config->{core-config}->{git});
-my $mysql 	= trim($config->{core-config}->{mysql});
+my $git 	= trim($config->{engine-conf}->{git});
+my $mysql 	= trim($config->{engine-conf}->{mysql});
 
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
@@ -67,7 +67,7 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
 		# This section of the configuration is the core script config
 		# Skip it and see next config part.
-		next if ($project eq "core-config");
+		next if ($project eq "engine-conf");
 
 		# Loading the project settings
                 my $local_path  = trim($config->{$project}->{local_project_path});
@@ -79,8 +79,8 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
                 # Is the project destination path exists ?
                 unless (-e $local_path){
-                        lig_this($buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
-			lig_this($buffer,  "[$project] Tried local path : $local_path.\n");
+                        lig_this(\@buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
+			lig_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
                         next;
                 }
 
@@ -88,31 +88,31 @@ print "WARNING : No MySQL client.\n" unless (-e $mysql);
                 lig_this($buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
                 if (!readdir DIR){
                         # No ! I create it.
-                        lig_this($buffer,  "[$project] Project doesn't exists, creating it...\n");
+                        lig_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
                         chdir "$local_path";
-                        lig_this($buffer,  "		cd $local_path\n");
-                        lig_this($buffer,  "		$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
+                        lig_this(\@buffer,  "		cd $local_path\n");
+                        lig_this(\@buffer,  "		$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
                         #print `pwd`;
                         if( system("$git clone --depth=$depth -b $branch $user\@$server:$git_project\n") == 0){
-                                lig_this($buffer,  "[$project] Project successfully loaded\n");
+                                lig_this(\@buffer,  "[$project] Project successfully loaded\n");
                                 # The project is successfully loaded, I search for a database and I load it.
-                                lig_this($buffer,  "		Searching for sql file ...\n");
+                                lig_this(\@buffer,  "		Searching for sql file ...\n");
                                 find(\&SQLload, "$local_path/$project");
                         }
 
                 }
                 else {
-                        lig_this($buffer,  "[$project] Project still exists, updating it ...\n");
-                        lig_this($buffer,  "		cd $local_path\n");
+                        lig_this(\@buffer,  "[$project] Project still exists, updating it ...\n");
+                        lig_this(\@buffer,  "		cd $local_path\n");
                         chdir "$local_path/$project";
-                        lig_this($buffer,  "[$project] Trying to update ...\n");
+                        lig_this(\@buffer,  "[$project] Trying to update ...\n");
                         my $status = `$git pull`;
                         chomp($status);
                         if ($status ne "Already up-to-date."){
                                 find(\&SQLload, "$local_path/$project");
                         }
                         else {
-                                lig_this($buffer,  "[$project] Already up to date.\n");
+                                lig_this(\@buffer,  "[$project] Already up to date.\n");
                         }
                 }
         }
@@ -159,7 +159,7 @@ sub mail_this {
         my ($recipient, $cc, $title, $message) = @_;
 
         my $Message = new MIME::Lite (
-                From =>'synchro@dynamoplus.fr',
+                From =>'deployment@omegacube.fr',
                 To =>$recipient,
                 Cc =>$cc,
                 Subject =>$title,
