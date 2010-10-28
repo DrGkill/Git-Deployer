@@ -104,7 +104,7 @@ my @mysql_files = ();
                 }
 
                 # Is the project is git initted ?
-                log_this(\@buffer,  "Failed while opening $local_path\n") if (!opendir(DIR, "$local_path/$project/.git"));
+                log_this(\@buffer,  "[$project] No project directory yet\n") if (!opendir(DIR, "$local_path/$project/.git"));
                 if (!readdir DIR){
                         # No ! I create it.
                         log_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
@@ -115,9 +115,9 @@ my @mysql_files = ();
                         if( system("$git clone --depth=$depth -b $branch $user\@$server:$git_project\n") == 0){
                                 
                                 # The project is successfully loaded, I search for a database and I load it.
-                                log_this(\@buffer,  "		Searching for sql file ...\n");
+                                log_this(\@buffer,  "		Searching for sql file ...");
                                 find(\&SQLfile, "$local_path/$project");
-				log_this(\@buffer,  "No update sql files found") if (scalar(@mysql_files) == 0);
+				log_this(\@buffer,  " No update sql files found.\n") if (scalar(@mysql_files) == 0);
 
 				#For each sql file find, call mysql client to load them.
 				foreach my $sql_file (@mysql_files) {
@@ -180,7 +180,7 @@ sub SQLfile {
         my $file = $File::Find::name;
 
         if ($file =~ /.*update.*\.sql$/){
-                log_this(\@buffer,  "		Found SQL update file : $file\n");
+                log_this(\@buffer,  "\n		Found SQL update file : $file\n");
 		push(@mysql_files, $file);
         }
 }
