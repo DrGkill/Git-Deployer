@@ -55,13 +55,14 @@ my $config = Config::Auto::parse();
 my $git 	= trim($config->{"engine-conf"}->{"git"});
 my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
 my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
+my $smtp	= trim($config->{"engine-conf"}->{"smtp"});
 
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
 # Create a buffer for logging message during the script execution.
 my @buffer = ();
-# Create a global array for the sql file becaus of this *** find function
+# Create a global array for the sql file because of this *** find function
 my @mysql_files = ();
 
 {
@@ -90,7 +91,6 @@ my @mysql_files = ();
 		my $db_user	= trim($config->{$project}->{"db_user"});
 		my $db_pass	= trim($config->{$project}->{"db_pass"});
 
-		my $smtp	= trim($config->{"engine-conf"}->{"smtp"});
 		my $contact	= trim($config->{$project}->{"contact"});
 
 		# init the mysql file array
@@ -148,8 +148,9 @@ my @mysql_files = ();
                         }
 			else {
 				if ($? == 0) {
+					log_this(\@buffer,  "		Searching for sql file ...");
 					find(\&SQLfile, "$local_path/$project");
-					log_this(\@buffer,  "No update sql files found") if (scalar(@mysql_files) == 0);
+					log_this(\@buffer,  "No update sql files found\n") if (scalar(@mysql_files) == 0);
 					foreach my $sql_file (@mysql_files) {
 						if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file) == 0) {
 							log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
@@ -221,7 +222,7 @@ sub mail_this {
 		$message .= $lines;
 	}
 
-	$message .= "\n\nCompléments d'informations :";
+	$message .= "\n\nCompléments d'informations :\n";
 
 	foreach my $compl (@$complement) {
 		$message .= $compl;
