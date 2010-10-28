@@ -74,7 +74,7 @@ my @mysql_files = ();
 		# This section of the configuration is the core script config
 		# Skip it and see next config part.
 		next if ($project eq "engine-conf");
-		exit(0) if $project eq "end");
+		exit(0) if ($project eq "end");
 
 		# Loading the project settings
                 my $local_path  = trim($config->{$project}->{"local_project_path"});
@@ -90,7 +90,7 @@ my @mysql_files = ();
 		my $db_user	= trim($config->{$project}->{"db_user"});
 		my $db_pass	= trim($config->{$project}->{"db_pass"});
 
-		my $smtp	= trim($config->{"smtp"});
+		my $smtp	= trim($config->{"engine-conf"}->{"smtp"});
 		my $contact	= trim($config->{$project}->{"contact"});
 
 		# init the mysql file array
