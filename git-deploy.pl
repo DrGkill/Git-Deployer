@@ -29,7 +29,10 @@
 #		octal also works : 
 #############################################################################################################
 
-# TODO 
+# TODO
+# - Mettre le message de retour du git pull dans un array
+# - Faire une variable globale pour les fichiers MySQL
+#
 # Git deploy should :
 #       [OK] Get the directory and put script/http files into a specific directory
 #       [OK] Download only the last version of the project
@@ -57,6 +60,8 @@ my $mysql 	= trim($config->{"engine-conf"}->{mysql});
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
+my @mysql_files = ();
+
 # Create a buffer for logging message during the script execution.
 my @buffer = ();
 
@@ -75,6 +80,15 @@ my @buffer = ();
                 my $user        = trim($config->{$project}->{"user"});
                 my $server      = trim($config->{$project}->{"server"});
                 my $git_project = trim($config->{$project}->{"git_project"});
+
+		my $db_host	= trim($config->{$project}->{"db_host"});
+		my $db_port	= trim($config->{$project}->{"db_port"});
+		my $db_name	= trim($config->{$project}->{"db_name"});
+		my $db_user	= trim($config->{$project}->{"db_user"});
+		my $db_pass	= trim($config->{$project}->{"db_pass"});
+
+		# init the mysql file array
+		@mysql_files = ();
 
                 # Is the project destination path exists ?
                 unless (-e $local_path){
@@ -115,7 +129,15 @@ my @buffer = ();
                         }
 			else {
 				if ($? == 0) {
-					find(\&SQLload, "$local_path/$project");
+					find(\&SQLfile, "$local_path/$project");
+					foreach my $sql_file (@mysql_files) {
+						if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file)==0) {
+							log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
+						}
+						else {
+							log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
+						}
+					}
 				}
 				else {
 					log_this(\@buffer,  "[$project] git pull failed : $status");
@@ -125,11 +147,12 @@ my @buffer = ();
         }
 }
 
-sub SQLload {
+sub SQLfile {
         my $file = $File::Find::name;
 
         if ($file =~ /.*update.*\.sql$/){
                 log_this(\@buffer,  "		Found SQL update file : $file\n");
+		push(@mysql_files, $file);
 		
         }
 
@@ -138,7 +161,7 @@ sub SQLload {
 sub loaddb {
         my ($host, $port, $db, $user, $pass, $sql_file) = @_;
 	
-	return system("$mysql --host=$host -P $port -u $user -p$password -D $db < $sql_file");
+	return system("$mysql --host=$host -P $port -u $user -p$pass -D $db < $sql_file");
 }
 
 sub set_permissions {
