@@ -30,15 +30,13 @@
 #############################################################################################################
 
 # TODO
-# - Mettre le message de retour du git pull dans un array
-# - Faire une variable globale pour les fichiers MySQL
 #
 # Git deploy should :
 #       [OK] Get the directory and put script/http files into a specific directory
 #       [OK] Download only the last version of the project
 #       [OK] Apply only updates if the project already exists
 #       - Be able to set file/directory permissions
-#       - Be able to look after a sql file and update the database
+#       [OK] Be able to look after a sql file and update the database
 #       - The database must only be changed in the structure and do not add or delete data/rows
 #       - Be able to verify the application environment (Web server config, php, ruby, python config)
 #       [OK] Search for new versions
@@ -54,20 +52,24 @@ use Data::Dumper;
 
 my $config = Config::Auto::parse();
         #print Dumper($config);
-my $git 	= trim($config->{"engine-conf"}->{git});
-my $mysql 	= trim($config->{"engine-conf"}->{mysql});
+my $git 	= trim($config->{"engine-conf"}->{"git"});
+my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
+my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
 
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
 
-my @mysql_files = ();
-
 # Create a buffer for logging message during the script execution.
 my @buffer = ();
+# Create a global array for the sql file becaus of this *** find function
+my @mysql_files = ();
 
 {
 	# Lets see what project we have to deploy ...
         foreach my $project (keys(%$config)) {
+
+		# Redirect STDERR to a buffer.
+		open (STDERR,">$errors_file");
 
 		# This section of the configuration is the core script config
 		# Skip it and see next config part.
@@ -86,6 +88,9 @@ my @buffer = ();
 		my $db_name	= trim($config->{$project}->{"db_name"});
 		my $db_user	= trim($config->{$project}->{"db_user"});
 		my $db_pass	= trim($config->{$project}->{"db_pass"});
+
+		my $smtp	= trim($config->{"smtp"};
+		my $contact	= trim($config->{$project}->{"contact"});
 
 		# init the mysql file array
 		@mysql_files = ();
@@ -140,11 +145,18 @@ my @buffer = ();
 					}
 				}
 				else {
-					log_this(\@buffer,  "[$project] git pull failed : $status");
+					log_this(\@buffer,  "[$project] git pull failed.");
 				}
 			}
                 }
+		my @compl = read_file($errors_file);
+		mail_this($smtp, $contact, "", "[Auto Deployment] $project ", \@buffer, \@compl);
+		
+		# Purge the error file
+		close (STDERR);
+		unlink($errors_file);
         }
+	close(STDERR);
 }
 
 sub SQLfile {
@@ -153,9 +165,7 @@ sub SQLfile {
         if ($file =~ /.*update.*\.sql$/){
                 log_this(\@buffer,  "		Found SQL update file : $file\n");
 		push(@mysql_files, $file);
-		
         }
-
 }
 
 sub loaddb {
@@ -186,7 +196,19 @@ sub trim
 }
 
 sub mail_this {
-        my ($recipient, $cc, $title, $message) = @_;
+        my ($smtp, $recipient, $cc, $title, $message, $complement) = @_;
+
+	my $message = "";
+
+	foreach my $lines (@$message) {
+		$message .= $lines;
+	}
+
+	$message .= "Compléments d'informations :";
+
+	foreach my $compl (@$complement) {
+		$message .= $compl;
+	}
 
         my $Message = new MIME::Lite (
                 From =>'deployment@omegacube.fr',
@@ -197,8 +219,21 @@ sub mail_this {
                 Data =>$message
         );
 
-        $Message -> send;
+        $Message -> send("smtp", $smtp);
 
         return 0;
 }
 
+# Just read a file and return it's content into an array
+sub read_file {
+        my ($file) = @_;
+
+	#print "-\n";
+        if(!open(DATA,$file)) {
+                die "Unable to open $file : $!\t[ KO ]\n";
+        }
+        my @lines = <DATA>;
+        close(DATA);
+
+        return @lines;
+}
