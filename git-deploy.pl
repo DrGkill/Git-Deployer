@@ -116,7 +116,18 @@ my @mysql_files = ();
                                 log_this(\@buffer,  "[$project] Project successfully loaded\n");
                                 # The project is successfully loaded, I search for a database and I load it.
                                 log_this(\@buffer,  "		Searching for sql file ...\n");
-                                find(\&SQLload, "$local_path/$project");
+                                find(\&SQLfile, "$local_path/$project");
+				log_this(\@buffer,  "No update sql files found") if (scalar(@mysql_files > 0);
+
+				#For each sql file find, call mysql client to load them.
+				foreach my $sql_file (@mysql_files) {
+					if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file)==0) {
+						log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
+					}
+					else {
+						log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
+					}
+				}
                         }
 			else {
 				log_this(\@buffer,  "[$project] Was not able to load the project. See your git config details.\n");
@@ -136,6 +147,7 @@ my @mysql_files = ();
 			else {
 				if ($? == 0) {
 					find(\&SQLfile, "$local_path/$project");
+					log_this(\@buffer,  "No update sql files found") if (scalar(@mysql_files > 0);
 					foreach my $sql_file (@mysql_files) {
 						if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file)==0) {
 							log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
@@ -144,6 +156,7 @@ my @mysql_files = ();
 							log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
 						}
 					}
+
 				}
 				else {
 					log_this(\@buffer,  "[$project] git pull failed.\n");
@@ -157,7 +170,7 @@ my @mysql_files = ();
 		# Purge the error file
 		close (STDERR);
 		unlink($errors_file);
-        }
+       	}
 	close(STDERR);
 }
 
