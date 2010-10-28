@@ -3,7 +3,7 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	10.26.2010
-# Version:	0.3
+# Version:	0.4
 # 
 # Usage:	Execute it via crontab or shell prompt, no args
 # 
@@ -74,6 +74,7 @@ my @mysql_files = ();
 		# This section of the configuration is the core script config
 		# Skip it and see next config part.
 		next if ($project eq "engine-conf");
+		exit(0) if $project eq "end");
 
 		# Loading the project settings
                 my $local_path  = trim($config->{$project}->{"local_project_path"});
@@ -89,7 +90,7 @@ my @mysql_files = ();
 		my $db_user	= trim($config->{$project}->{"db_user"});
 		my $db_pass	= trim($config->{$project}->{"db_pass"});
 
-		my $smtp	= trim($config->{"smtp"};
+		my $smtp	= trim($config->{"smtp"});
 		my $contact	= trim($config->{$project}->{"contact"});
 
 		# init the mysql file array
@@ -150,6 +151,7 @@ my @mysql_files = ();
 			}
                 }
 		my @compl = read_file($errors_file);
+		print "Sending report to $contact via $smtp for the project $project\n";
 		mail_this($smtp, $contact, "", "[Auto Deployment] $project ", \@buffer, \@compl);
 		
 		# Purge the error file
@@ -196,11 +198,11 @@ sub trim
 }
 
 sub mail_this {
-        my ($smtp, $recipient, $cc, $title, $message, $complement) = @_;
+        my ($smtp, $recipient, $cc, $title, $body, $complement) = @_;
 
 	my $message = "";
 
-	foreach my $lines (@$message) {
+	foreach my $lines (@$body) {
 		$message .= $lines;
 	}
 
