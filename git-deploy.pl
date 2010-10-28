@@ -146,7 +146,7 @@ my @mysql_files = ();
 					}
 				}
 				else {
-					log_this(\@buffer,  "[$project] git pull failed.");
+					log_this(\@buffer,  "[$project] git pull failed.\n");
 				}
 			}
                 }
@@ -206,7 +206,7 @@ sub mail_this {
 		$message .= $lines;
 	}
 
-	$message .= "Compléments d'informations :";
+	$message .= "\n\nCompléments d'informations :";
 
 	foreach my $compl (@$complement) {
 		$message .= $compl;
