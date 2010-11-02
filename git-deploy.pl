@@ -224,13 +224,11 @@ sub set_perm {
 		chomp($setting);
 		next if $setting =~ /^#/;
 
-		if ($setting =~ /^(.*),(.*),(.*),(\d+)$/){
+		if ($setting =~ /^(.*),(.*),(.*),(.*)$/){
 			$file		= $1;
 			$owner		= $2;
 			$group		= $3;
 			$perm_code	= $4;
-			
-			print "file : $file\n";
 
 			unless ($name_uid->{$owner}) {
 				my ($login,$pass,$uid,$gid) = getpwnam($owner);
