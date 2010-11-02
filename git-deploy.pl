@@ -189,7 +189,7 @@ sub SQLfile {
         }
 }
 
-sub SQLfile {
+sub PERMfile {
         my $file = $File::Find::name;
 
         if ($file =~ /\.permission$/){
@@ -211,14 +211,17 @@ sub set_perm {
 
 	my @settings = read_file($perm_file);
 
+	# print Dumper(@settings);
+
 	my $file;
 	my $owner;
 	my $group;
 	my $perm_code;
-	my %name_uid = ();
+	my $name_uid;
 
 	foreach my $setting (@settings) {
 
+		chomp($setting);
 		next if $setting =~ /^#/;
 
 		if ($setting =~ /^(.*),(.*),(.*),(\d+)$/){
@@ -226,12 +229,15 @@ sub set_perm {
 			$owner		= $2;
 			$group		= $3;
 			$perm_code	= $4;
+			
+			print "file : $file\n";
 
 			unless ($name_uid->{$owner}) {
 				my ($login,$pass,$uid,$gid) = getpwnam($owner);
 				$name_uid->{$owner}->{"uid"} = $uid;
 				$name_uid->{$owner}->{"gid"} = $gid;
 			} 
+			#print "setting $perm_code on $file\n";
 			chown $name_uid->{$owner}->{"uid"}, $name_uid->{$owner}->{"gid"}, $file;
 			chmod oct($perm_code), $file;
 		}
