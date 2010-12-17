@@ -115,7 +115,7 @@ my @perm_files = ();
                         log_this(\@buffer,  "		cd $local_path\n");
                         log_this(\@buffer,  "		$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
 
-			$project_status = system("$git clone --depth=$depth -b $branch $user\@$server:$git_project\n");
+			$project_status = system("$git clone --depth=$depth -b $branch $user://$server:$git_project\n");
 
                 }
                 else {
@@ -240,6 +240,7 @@ sub set_perm {
 			chmod oct($perm_code), $file;
 		}
 	}
+	#unlink($perm_file);
 }
 
 sub log_this {
