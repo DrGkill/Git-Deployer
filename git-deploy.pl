@@ -269,7 +269,7 @@ sub mail_this {
 		$message .= $lines;
 		# Do not send mais if the project has not been update
 		# TODO : make a conf for this.
-		return 0 if ($line =~ /Already up to date/);
+		return 0 if ($lines =~ /Already up to date/);
 	}
 
 	$message .= "\n\nCompléments d'informations :\n";
