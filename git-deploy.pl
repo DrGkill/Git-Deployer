@@ -2,8 +2,8 @@
 #############################################################################################################
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
-# Date: 	10.26.2010
-# Version:	0.4
+# Date: 	12.29.2010
+# Version:	0.5
 # 
 # Usage:	Execute it via crontab or shell prompt, no args
 # 
@@ -267,6 +267,9 @@ sub mail_this {
 
 	foreach my $lines (@$body) {
 		$message .= $lines;
+		# Do not send mais if the project has not been update
+		# TODO : make a conf for this.
+		return 0 if ($line =~ /Already up to date/);
 	}
 
 	$message .= "\n\nCompléments d'informations :\n";
