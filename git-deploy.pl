@@ -2,8 +2,8 @@
 #############################################################################################################
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
-# Date: 	12.29.2010
-# Version:	0.5
+# Date: 	13.01.2010
+# Version:	0.6
 # 
 # Usage:	Execute it via crontab or shell prompt, no args
 # 
@@ -149,6 +149,7 @@ my @perm_files = ();
 			foreach my $sql_file (@mysql_files) {
 				if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file) == 0) {
 					log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
+					unlink($sql_file);
 				}
 				else {
 					log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
@@ -163,10 +164,10 @@ my @perm_files = ();
 				set_perm("$local_path/$project", $perm_file);
 			}
 
-			log_this(\@buffer,  "[$project] Project successfully updated\n");
+			log_this(\@buffer,  "\n[$project] Project successfully updated\n");
 		}
 		else {
-			log_this(\@buffer,  "[$project] Was not able to load the project. See your git config details.\n");
+			log_this(\@buffer,  "\n[$project] Was not able to load the project. See your git config details.\n");
 		}
 
 		my @compl = read_file($errors_file);
