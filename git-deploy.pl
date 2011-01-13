@@ -226,7 +226,7 @@ sub set_perm {
 		next if $setting =~ /^#/;
 
 		if ($setting =~ /^(.*),(.*),(.*),(.*)$/){
-			$file		= $1;
+			$file		= "$path/$1";
 			$owner		= $2;
 			$group		= $3;
 			$perm_code	= $4;
