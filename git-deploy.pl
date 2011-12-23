@@ -46,15 +46,15 @@
 # TODO
 #
 # Git deploy should :
-#       [OK] Get the directory and put script/http files into a specific directory
-#       [OK] Download only the last version of the project
-#       [OK] Apply only updates if the project already exists
-#       [OK] Be able to set file/directory permissions
-#       [OK] Be able to look after a sql file and update the database
+#       [DONE] Get the directory and put script/http files into a specific directory
+#       [DONE] Download only the last version of the project
+#       [DONE] Apply only updates if the project already exists
+#       [DONE] Be able to set file/directory permissions
+#       [DONE] Be able to look after a sql file and update the database
 #       - The database must only be changed in the structure and do not add or delete data/rows
 #       - Be able to verify the application environment (Web server config, php, ruby, python config)
-#       [OK] Search for new versions
-#       [OK] Generate a report of the deployment and send it to concerned poeple by mail.
+#       [DONE] Search for new versions
+#       [DONE] Generate a report of the deployment and send it to concerned poeple by mail.
 
 use strict;
 use Config::Auto;
