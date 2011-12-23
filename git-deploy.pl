@@ -3,7 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Version:	0.6
+# Last mod	23.12.2011
+# Version:	0.7
 # 
 # Usage:	Execute it via crontab or shell prompt, no args
 # 
@@ -20,13 +21,26 @@
 #
 # Permission file: The permission file can be placed in the project tree, it must be named project.permission
 # 		The script will apply the specified permissions to the files described in it.
-# 		default user and group are users and group of the script executer ! be carefull to not
+# 		One CSV value per line. You can use absolute or relative pathes.
+# 		Default user and group are users and group of the script executer ! be carefull to not
 # 		execute it as root unless you exactly now what you're doing.
 # 		ex: 
-# 		toto.php = rw (will apply the write permission to the web server)
-#		titi.exe = rx (will apply the execution permission to all)
-#		blah.php = r  (will remove all write or execute permission while letting the read permission)
-#		octal also works : 
+#		./file.txt,toto,www-data,0660 (will apply read/write permission to toto and www-data users)
+#		./images/contenu/image.jpg,toto,www-data,0640 
+#
+#   Copyright (C) 2011 Guillaume Seigneuret (Omega Cube)
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>		 
 #############################################################################################################
 
 # TODO
@@ -35,12 +49,12 @@
 #       [OK] Get the directory and put script/http files into a specific directory
 #       [OK] Download only the last version of the project
 #       [OK] Apply only updates if the project already exists
-#       - Be able to set file/directory permissions
+#       [OK] Be able to set file/directory permissions
 #       [OK] Be able to look after a sql file and update the database
 #       - The database must only be changed in the structure and do not add or delete data/rows
 #       - Be able to verify the application environment (Web server config, php, ruby, python config)
 #       [OK] Search for new versions
-#       - Generate a report of the deployment and send it to concerned poeple by mail.
+#       [OK] Generate a report of the deployment and send it to concerned poeple by mail.
 
 use strict;
 use Config::Auto;
