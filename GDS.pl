@@ -6,6 +6,7 @@
 # Author : 	Guillaume Seigneuret
 # Date : 	02/01/12
 # Type : 	Deamon
+# Version : 	1.0a
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #

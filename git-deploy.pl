@@ -4,7 +4,7 @@
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
 # Last mod	23.12.2011
-# Version:	0.7
+# Version:	1.0a
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
