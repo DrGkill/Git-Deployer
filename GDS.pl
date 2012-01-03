@@ -10,7 +10,7 @@
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
-# Usage : 	gds 
+# Usage : 	gds <pidfile>
 # 		Fill the ADDRESS, PORT and gitdeployer variables as
 # 		wanted.
 #
@@ -40,6 +40,15 @@ our $_PROJECT	= "";
 
 {
 	$| = 1;
+
+	if (defined($ARGV[0])){
+		my $PID_file = $ARGV[0] ;
+		die "A git deployment server is already running\n" if(-e $PID_file);
+		die "Unable to open $PID_file for writing" unless open (PIDf,">$PID_file");
+		print PIDf $$;
+		close(PIDf);
+	}
+
 	my $server = IO::Socket::INET->new(
 					LocalHost 	=> $ADDRESS,
 					LocalPort	=> $PORT,
