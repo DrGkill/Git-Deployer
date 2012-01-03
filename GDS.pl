@@ -56,6 +56,8 @@ our $_PROJECT	= "";
 					Listen		=> 10 )   # or SOMAXCONN
 		or die "Couldn't be a tcp server on port $PORT : $@\n";
 
+	print "GDS started, waiting for connections...\n";
+	
 	while (my $client = $server->accept()) {
 	        unless (my $masterpid = fork() ){
 		       	# We are in the child
