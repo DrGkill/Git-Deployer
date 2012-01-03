@@ -3,15 +3,29 @@
 ##########################################################################
 #
 # Script name : Git Deployer Server
-# Author : Guillaume Seigneuret
-# Date : 02/01/12
-# Type : Deamon
+# Author : 	Guillaume Seigneuret
+# Date : 	02/01/12
+# Type : 	Deamon
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
-# Usage : gds 
+# Usage : 	gds 
+# 		Fill the ADDRESS, PORT and gitdeployer variables as
+# 		wanted.
 #
+##   Copyright (C) 2012 Guillaume Seigneuret (Omega Cube)
 #
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>
 ############################################################################
 
 use strict;
@@ -20,6 +34,8 @@ use Data::Dumper;
 
 my $ADDRESS 	= "localhost";
 my $PORT 	= 32337;
+my $gitdeployer = "";
+our $_PROJECT	= "";
 
 {
 	$| = 1;
@@ -50,6 +66,12 @@ my $PORT 	= 32337;
 					if($rep =~ /Project: .*\/(\w+.git) Branch: ([\w]+)/) {
 						print $client "Recognized Project : $1\r\n";
 						print $client "Recognized Branch : $2\r\n";
+						$_PROJECT = $1;
+
+						my $standard_out = select($client);
+						# Launch git-deployer
+						require $gitdeployer;
+						select($standard_out);
 					}
 					else {
 						print $client "Query malformed.\r\n";
@@ -65,20 +87,4 @@ my $PORT 	= 32337;
 	}
 	print "Close Server Called.\n";
 	close($server);
-}
-
-sub messagePsec {
-	my ($time_tracker, $msg_nb, $prev_msg_lenght) = @_;
-	
-	print "\b" x $prev_msg_lenght;
-	my $now = time;
-	my $interval = $now - $time_tracker;
-	$interval = 1 if ($interval == 0);
-	my $answer = int($msg_nb/$interval);
-	$answer .= "msg/s";
-	
-	print $answer;
-
-	return length($answer);
-
 }

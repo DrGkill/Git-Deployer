@@ -6,11 +6,14 @@
 # Last mod	23.12.2011
 # Version:	0.7
 # 
-# Usage:	Execute it via crontab or shell prompt, no args
+# Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
 # Usage domain: Works for every web application using MySQL or not.
 # 		Also works for basic application without complex dependant environment. 
 # 
+# Args :	Optionnal, the name of the project we want to load. If no args, all the projects in
+# 		the config file are updated.
+#
 # Config: 	Every parameters must be described in the config file
 # 
 # Config file:	Must be the name of the script (with .config or rc extension), 
@@ -28,7 +31,7 @@
 #		./file.txt,toto,www-data,0660 (will apply read/write permission to toto and www-data users)
 #		./images/contenu/image.jpg,toto,www-data,0640 
 #
-#   Copyright (C) 2011 Guillaume Seigneuret (Omega Cube)
+#   Copyright (C) 2012 Guillaume Seigneuret (Omega Cube)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -83,6 +86,12 @@ my @perm_files = ();
 {
 	# Lets see what project we have to deploy ...
         foreach my $project (keys(%$config)) {
+
+		# In the case we bring the project name as argument,
+		# We skip the loop if the project is not equal to the
+		# one we want to load.
+		next if(defined($ARGV[0]) && $ARGV[0] ne $project);
+		next if(defined($_PROJECT) && $_PROJECT) ne $project);
 
 		# Redirect STDERR to a buffer.
 		open (STDERR,">$errors_file");
