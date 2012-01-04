@@ -35,11 +35,12 @@ use Data::Dumper;
 
 my $ADDRESS 	= "localhost";
 my $PORT 	= 32337;
-my $gitdeployer = "";
-our $_PROJECT	= "";
+my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 
 {
 	$| = 1;
+
+	our $_PROJECT   = "";
 
 	if (defined($ARGV[0])){
 		my $PID_file = $ARGV[0] ;
@@ -78,15 +79,19 @@ our $_PROJECT	= "";
 					#print "\n*** Fin de connexion sur PID $$ ***\n";
 				} 
 				else {
-					if($rep =~ /Project: .*\/(\w+.git) Branch: ([\w]+)/) {
+					if($rep =~ /Project: .*\/(\w+).git Branch: ([\w]+)/) {
 						print $client "Recognized Project : $1\r\n";
 						print $client "Recognized Branch : $2\r\n";
 						$_PROJECT = $1;
 
 						my $standard_out = select($client);
 						# Launch git-deployer
-						require $gitdeployer;
+						print "Launching Git Deployer...\n";
+						#require "test.pl";
+						require "$gitdeployer";
+						#system("$gitdeployer $_PROJECT");
 						select($standard_out);
+						close($client);
 					}
 					else {
 						print $client "Query malformed.\r\n";

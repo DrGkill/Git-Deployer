@@ -66,7 +66,9 @@ use MIME::Lite;
 use File::Find;
 use Data::Dumper;
 
+$| = 1;
 
+our $_PROJECT;
 my $config = Config::Auto::parse();
         #print Dumper($config);
 my $git 	= trim($config->{"engine-conf"}->{"git"});
@@ -90,8 +92,13 @@ my @perm_files = ();
 		# In the case we bring the project name as argument,
 		# We skip the loop if the project is not equal to the
 		# one we want to load.
-		next if(defined($ARGV[0]) && $ARGV[0] ne $project);
-		next if(defined($_PROJECT) && $_PROJECT) ne $project);
+
+		#unless (defined($_PROJECT) and ($_PROJECT ne $project)) {
+		#	print "$_PROJECT\n";
+		#}
+		next if( ($ARGV[0] ne $project) 
+			and ($_PROJECT ne $project));
+		#next if(defined($_PROJECT) && ($_PROJECT ne $project));
 
 		# Redirect STDERR to a buffer.
 		open (STDERR,">$errors_file");
