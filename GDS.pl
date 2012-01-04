@@ -66,9 +66,12 @@ our $_PROJECT	= "";
 	  		printf "[%12s]", time;
 			 
 			print " Connection from: ".inet_ntoa($client->peeraddr)."\n";
-	  
+	  		print $client "Welcome on GDS, please make your request.\r\n";
+
 	  		while(my $rep = <$client>) {
-				
+			
+				printf "[%12s] Asked to interpret : %s", time, $rep;
+
 				if ( $rep =~ /^QUIT/i) {
 					print $client "Bye!\n";
 					close($client);
