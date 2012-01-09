@@ -41,6 +41,7 @@ my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 	$| = 1;
 
 	our $_PROJECT   = "";
+	our $_BRANCH	= "";
 
 	if (defined($ARGV[0])){
 		my $PID_file = $ARGV[0] ;
