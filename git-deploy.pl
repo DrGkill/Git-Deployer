@@ -68,7 +68,8 @@ use Data::Dumper;
 
 $| = 1;
 
-our $_PROJECT;
+our $_PROJECT	="";
+our $_BRANCH	="";
 my $config = Config::Auto::parse();
         #print Dumper($config);
 my $git 	= trim($config->{"engine-conf"}->{"git"});
@@ -84,6 +85,7 @@ my @buffer = ();
 # Create a global array for the sql file because of this *** find function
 my @mysql_files = ();
 my @perm_files = ();
+my @wp_files = ();
 
 {
 	# Lets see what project we have to deploy ...
@@ -93,12 +95,17 @@ my @perm_files = ();
 		# We skip the loop if the project is not equal to the
 		# one we want to load.
 
-		#unless (defined($_PROJECT) and ($_PROJECT ne $project)) {
-		#	print "$_PROJECT\n";
-		#}
 		next if( ($ARGV[0] ne $project) 
-			and ($_PROJECT ne $project));
+				or ($_PROJECT ne $project));
 		#next if(defined($_PROJECT) && ($_PROJECT ne $project));
+
+		# We verify that 
+		if ($_BRANCH ne "" 
+			and trim($config->{$project}->{"branch"} ne $_BRANCH)
+		{
+			print "Project and branch are not defined in config file.\n";
+			next;
+		}
 
 		# Redirect STDERR to a buffer.
 		open (STDERR,">$errors_file");
@@ -186,6 +193,15 @@ my @perm_files = ();
 				}
 			}
 
+			# Execute the WordPress script 
+			log_this(\@buffer,  "		Searching for WordPress script ...");
+			find(\&WPfile, "$local_path/$project");
+			log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
+			
+			foreach my $wp_file (@wp_files) {
+				exec $wp_file;
+			}
+
 			# Set the file permissions :
 			log_this(\@buffer,  "		Searching for permission map file...");
 			find(\&PERMfile, "$local_path/$project");
@@ -226,6 +242,15 @@ sub PERMfile {
         if ($file =~ /\.permission$/){
                 log_this(\@buffer,  "\n		Found permission map file : $file\n");
 		push(@perm_files, $file);
+        }
+}
+
+sub WPfile {
+        my $file = $File::Find::name;
+
+        if ($file =~ /\.wpactivate$/){
+                log_this(\@buffer,  "\n		Found wordpress script : $file\n");
+		push(@wp_files, $file);
         }
 }
 
