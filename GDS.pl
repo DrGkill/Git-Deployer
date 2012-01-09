@@ -79,10 +79,11 @@ my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 					#print "\n*** Fin de connexion sur PID $$ ***\n";
 				} 
 				else {
-					if($rep =~ /Project: .*\/(\w+).git Branch: ([\w]+)/) {
+					if($rep =~ /Project: .*\/([\w\-\.]+)\.git Branch: ([\w\-]+)/) {
 						print $client "Recognized Project : $1\r\n";
 						print $client "Recognized Branch : $2\r\n";
-						$_PROJECT = $1;
+						$_PROJECT 	= $1;
+						$_BRANCH	= $2;
 
 						my $standard_out = select($client);
 						# Launch git-deployer
