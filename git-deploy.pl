@@ -68,8 +68,8 @@ use Data::Dumper;
 
 $| = 1;
 
-our $_PROJECT	="";
-our $_BRANCH	="";
+our $_PROJECT;
+our $_BRANCH;
 my $config = Config::Auto::parse();
         #print Dumper($config);
 my $git 	= trim($config->{"engine-conf"}->{"git"});
@@ -93,8 +93,8 @@ my @wp_files = ();
 
 	my $project = "";
 	$project = $ARGV[0] if(defined trim($config->{$ARGV[0]}));
-	if (defined trim($config->{$_PROJECT}) and 
-		defined trim($config->{$_PROJECT}->{$_BRANCH}) 
+	if (defined $config->{$_PROJECT} #and 
+		#	defined trim($config->{$_PROJECT}->{$_BRANCH}) 
 	) {
 		$project = $_PROJECT;
 	}
@@ -188,7 +188,7 @@ my @wp_files = ();
 		log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
 			
 		foreach my $wp_file (@wp_files) {
-			exec $wp_file;
+			print `$wp_file`;
 		}
 
 		# Set the file permissions :
