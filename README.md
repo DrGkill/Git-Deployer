@@ -25,38 +25,62 @@ The project needs sevral Perl plugins to work properly:
 * MIME::Lite
 
 To install them : 
+
+
 ```
 $ perl -MCPAN -e shell
+
 > install Config::Auto
+
 > install File::Find
+
 > install MIME::Lite
+
 ```
 
 or for Debian :
+
 ```
+
 apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl
+
 ```
 
 Place the GDS_start_script in /etc/init.d directory and set it executable :
+
 ```
-cp GDS_start_script /etc/init.d/gds
-chmod +x /etc/init.d/gds
+
+$ cp GDS_start_script /etc/init.d/gds
+
+$ chmod +x /etc/init.d/gds
+
 ```
 
 Edit the scipt and make it reflect your configuration :
+
 ```
 $ vim /etc/init.d/gds
+
 GDS=/path/to/GDS.pl
+
 PIDFILE=/var/run/gds.pid
+
 LOGFILE=/var/log/gds.lo
+
 ```
 
 Then Edit the GDS.pl and make it reflect your configuration :
+
 ```
+
 $ vim /path/to/GDS.pl
+
 my $ADDRESS 	= "localhost";
+
 my $PORT 	= 32337;
+
 my $gitdeployer = "/path/to/git-deploy.pl";
+
 ```
 
 Finally, configure your projects by editing the main configuration file :
