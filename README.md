@@ -19,6 +19,7 @@ This program got a deamon who receive hook trigger from Git and call the git dep
 <a name="install"></a>
 ### Install and Config
 The project needs sevral Perl plugins to work properly:
+
 * IO::Socket (installed by default on main systems)
 * Config::Auto
 * File::Find
