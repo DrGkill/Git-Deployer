@@ -12,8 +12,11 @@ Table of Contents:
 <a name="intro"></a>
 ### Introduction
 Git Auto Deployer help to auto deploy projects on one or multiple servers. 
+
 It has a fonction to set permission on the project, load MySQL, and Word Press scripts. 
+
 It can also manage multiple projects on one server.
+
 This program got a deamon who receive hook trigger from Git and call the git deployer script.
 
 <a name="install"></a>
@@ -87,20 +90,20 @@ $ vim GDS.config
 	smtp		= smtp.example.com
 
 [git-deploy]
-        branch = master
-        depth = 1
-        user = git
-        server = github.com
-        git_project = git-deploy/git-deploy.git
+	branch = master
+	depth = 1
+	user = git
+	server = github.com
+	git_project = git-deploy/git-deploy.git
 
-        local_project_path = /home/test
+	local_project_path = /home/test
 	contact	= deploywatcher@example.com
 
-        db_host = mydatabase
-        db_port = 3306
-        db_name = gitdeploy
-        db_user = gitdeploy
-        db_pass = gitdeploy_secret
+	db_host = mydatabase
+	db_port = 3306
+	db_name = gitdeploy
+	db_user = gitdeploy
+	db_pass = gitdeploy_secret
 
 	sysuser = git
 
