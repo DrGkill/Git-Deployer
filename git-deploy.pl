@@ -3,8 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Last mod	23.12.2011
-# Version:	1.0a
+# Last mod	16.01.2011
+# Version:	1.0b
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
@@ -58,6 +58,7 @@
 #       - Be able to verify the application environment (Web server config, php, ruby, python config)
 #       [DONE] Search for new versions
 #       [DONE] Generate a report of the deployment and send it to concerned poeple by mail.
+#       [DONE] Run the script with unprivileged user (change with the config)
 
 use strict;
 use Config::Auto;
@@ -119,6 +120,11 @@ my @wp_files = ();
 	my $db_pass	= trim($config->{$project}->{"db_pass"});
 
 	my $contact	= trim($config->{$project}->{"contact"});
+
+	my $sysuser	= trim($config->{$project}->{"sysuser"});
+
+	$> = (getpwnam($sysuser))[2];
+	$EUID= (getpwnam($sysuser))[2];
 
 	# init the mysql and perm file array
 	@mysql_files = ();

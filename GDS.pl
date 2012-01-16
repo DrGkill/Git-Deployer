@@ -4,9 +4,9 @@
 #
 # Script name : Git Deployer Server
 # Author : 	Guillaume Seigneuret
-# Date : 	02/01/12
+# Date : 	16/01/12
 # Type : 	Deamon
-# Version : 	1.0a
+# Version : 	1.0b
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
@@ -86,12 +86,13 @@ my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 						$_PROJECT 	= $1;
 						$_BRANCH	= $2;
 
+						# Send the STDout to the client.
 						my $standard_out = select($client);
 						# Launch git-deployer
 						print "Launching Git Deployer...\n";
-						#require "test.pl";
 						require "$gitdeployer";
-						#system("$gitdeployer $_PROJECT");
+						
+						# restore the stdout
 						select($standard_out);
 						close($client);
 					}
