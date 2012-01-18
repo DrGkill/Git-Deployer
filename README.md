@@ -27,6 +27,7 @@ The project needs sevral Perl plugins to work properly:
 * Config::Auto
 * File::Find
 * MIME::Lite
+* Proc::Daemon
 
 To install them : 
 
@@ -36,13 +37,14 @@ $ perl -MCPAN -e shell
 > install Config::Auto
 > install File::Find
 > install MIME::Lite
+> install Proc::Daemon
 
 ```
 
 or for Debian :
 
 ```
-$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl
+$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl
 ```
 
 Place the GDS_start_script in /etc/init.d directory and set it executable :
@@ -57,22 +59,10 @@ Edit the scipt and make it reflect your configuration :
 ```
 $ vim /etc/init.d/gds
 GDS=/path/to/GDS.pl
-PIDFILE=/var/run/gds.pid
-LOGFILE=/var/log/gds.lo
 ```
 
-Then Edit the GDS.pl and make it reflect your configuration :
-
-```
-$ vim /path/to/GDS.pl
-my $ADDRESS 	= "localhost";
-my $PORT 	= 32337;
-my $gitdeployer = "/path/to/git-deploy.pl";
-
-```
 
 Finally, configure your projects by editing the main configuration file :
-(I know, address, port for the GDS should be in the same conf file, i'll do it soon)
 
 Warning, the git-deployer script can be executed either by cron/shell prompt or by the GDS. Depending on that, name the config script by
 * GDS.config if lauched by the Git Deployer Server
@@ -84,6 +74,14 @@ Begin lines by '#' to make comments
 $ mv git-deploy.config.sample GDS.config
 $ vim GDS.config
 [engine-conf]
+	## Only for GDS
+	listen		= localhost
+	port		= 32337
+	pidfile		= /var/run/gds.pid
+	logfile		= /var/log/gds.log
+	##
+
+	## For Git-deployer
 	git 		= /usr/bin/git
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
