@@ -65,6 +65,7 @@ GDS=/path/to/GDS.pl
 Finally, configure your projects by editing the main configuration file :
 
 Warning, the git-deployer script can be executed either by cron/shell prompt or by the GDS. Depending on that, name the config script by
+
 * GDS.config if lauched by the Git Deployer Server
 * git-deployer.config if lauched directly via shell prompt or cron
 
