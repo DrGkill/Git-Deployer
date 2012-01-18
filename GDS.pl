@@ -6,13 +6,12 @@
 # Author : 	Guillaume Seigneuret
 # Date : 	16/01/12
 # Type : 	Deamon
-# Version : 	1.0b
+# Version : 	1.1b
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
-# Usage : 	gds <pidfile>
-# 		Fill the ADDRESS, PORT and gitdeployer variables as
-# 		wanted.
+# Usage : 	gds [-p pidfile] [-l logfile] [-d]
+# 		-d for daemonize
 #
 ##   Copyright (C) 2012 Guillaume Seigneuret (Omega Cube)
 #
@@ -31,24 +30,52 @@
 
 use strict;
 use IO::Socket;
+use Config::Auto;
 use Data::Dumper;
+use Getopt::Std;
+use Proc::Daemon;
 
-my $ADDRESS 	= "localhost";
-my $PORT 	= 32337;
-my $gitdeployer = "/home/git-deployer/git-deploy.pl";
+my %opts	= ();
+my $config 	= Config::Auto::parse();
+my $ADDRESS 	= trim($config->{"engine-conf"}->{"listen"});
+my $PORT 	= trim($config->{"engine-conf"}->{"port"});
+my $PID_file	= trim($config->{"engine-conf"}->{"pidfile"});
+my $LOG_file	= trim($config->{"engine-conf"}->{"logfile"});
+my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
+
 
 {
+	# Autoflush
 	$| = 1;
 
+	# Don't want zombie process just because we are bad parrents
+	# and we don't care about our chidren :p
+	$SIG{CHLD} = "IGNORE";
+
+	# Get command line options
+	getopts('dlp', \%opts);
+
+	# Global vars for git-deploy
 	our $_PROJECT   = "";
 	our $_BRANCH	= "";
 
-	if (defined($ARGV[0])){
-		my $PID_file = $ARGV[0] ;
-		die "A git deployment server is already running\n" if(-e $PID_file);
+	$PID_file = $opts{p} if defined $opts{p};
+	die "A git deployment server is already running\n" if(-e $PID_file);
+
+	my $standard_out;
+
+	if (defined $opts{d}) {
+		Proc::Daemon::Init();
+		
+		# Write the PID file
 		die "Unable to open $PID_file for writing" unless open (PIDf,">$PID_file");
 		print PIDf $$;
 		close(PIDf);
+
+		# Open the log file
+		$LOG_file = $opts{l} if defined $opts{l};
+		open(LOGFILE, ">>", $LOG_file) or die "Unable to open ".$LOG_file;
+		$standard_out = select(LOGFILE);
 	}
 
 	my $server = IO::Socket::INET->new(
@@ -87,7 +114,7 @@ my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 						$_BRANCH	= $2;
 
 						# Send the STDout to the client.
-						my $standard_out = select($client);
+						$standard_out = select($client);
 						# Launch git-deployer
 						print "Launching Git Deployer...\n";
 						require "$gitdeployer";
@@ -110,4 +137,15 @@ my $gitdeployer = "/home/git-deployer/git-deploy.pl";
 	}
 	print "Close Server Called.\n";
 	close($server);
+}
+
+sub trim
+{
+    my @out = @_;
+    for (@out)
+    {
+        s/^\s+//;
+        s/\s+$//;
+    }
+    return wantarray ? @out : $out[0];
 }

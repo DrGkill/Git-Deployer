@@ -1,4 +1,9 @@
 [engine-conf]
+	listen		= localhost
+	port		= 32337
+	pidfile		= /var/run/gds.pid
+	logfile		= /var/log/gds.log
+	git-deployer	= /home/git-deployer/git-deployer.pl
 	git 		= /usr/bin/git
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
