@@ -1,33 +1,53 @@
 #!/bin/sh
-# By Guillaume Seigneuret 2012
-# Start, Stop, Check, Reload GDS
+
+### BEGIN INIT INFO
+# Provides:          pgpool-II-9997
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Should-Start:      postgresql
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start GDS
+# Description:  GDS is a deamon who control the git-deployer script
+# 		to auto deploy projects
+# Author: Guillaume Seigneuret
+# CopyRight OmegaCube 2012
+### END INIT INFO
 
 
-GDS=/cygdrive/d/W3/SCRIPTS/Git-Deployer/GDS.pl
-PIDFILE=/var/run/gds.pid
-LOGFILE=/var/log/gds.log
+GDS_HOME=/cygdrive/d/W3/SCRIPTS/Git-Deployer
+GDS_BIN=$GDS_HOME/GDS.pl
+GDS_PID=/var/run/gds.pid
 
-gds_start()
-{
-	echo -n "Starting Git Deployment Server ... "
-	$GDS $PIDFILE >> $LOGFILE 2>&1 &
-	echo "[STARTED]"
-}
+# GDS options
+#  -d, 		Daemon mode
+#  -l log_file, Specify another log file than the one in conf file
+#  -p pid_file, Specify another pid file than the one in conf file
 
-gds_stop()
-{
-	echo -n "Stoping Git Deployment Server ... "
-	kill `cat $PIDFILE`
-	rm $PIDFILE
-	echo "[STOPED]"
-}
+[ ! -e "${GDS_BIN}" ] && echo "GDS ERROR - ${GDS_BIN} does not exist" && exit 1
 
-gds_restart()
-{
-	gds_stop
-	gds_start
-}
+GDS_COMMAND="$GDS_BIN -d -p $GDS_PID"
 
-
-
-gds_$1
+case "$1" in
+	start)
+		echo -n "Starting Git Deployment Server ... "
+		$GDS_COMMAND && echo "[STARTED]" && exit 0
+		echo "[FAILED]" && exit 1
+		;;
+	stop)
+		echo -n "Stoping Git Deployment Server ... "
+		kill `cat $GDS_PID` && rm $GDS_PID && echo "[STOPED]" && exit 0
+		echo "[FAILED]" && exit 1
+		;;
+	restart)
+		echo "Restarting Git Deployment Server ... "
+		$0 stop
+		sleep 2
+		$0 start
+		exit 0
+		;;
+	*)
+		echo "GDS usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac
