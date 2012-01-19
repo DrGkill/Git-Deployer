@@ -53,7 +53,7 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 	$SIG{CHLD} = "IGNORE";
 
 	# Get command line options
-	getopts('dlp', \%opts);
+	getopts('dl:p:', \%opts);
 
 	# Global vars for git-deploy
 	our $_PROJECT   = "";

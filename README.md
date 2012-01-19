@@ -38,7 +38,6 @@ $ perl -MCPAN -e shell
 > install File::Find
 > install MIME::Lite
 > install Proc::Daemon
-
 ```
 
 or for Debian :
@@ -58,7 +57,7 @@ Edit the scipt and make it reflect your configuration :
 
 ```
 $ vim /etc/init.d/gds
-GDS=/path/to/GDS.pl
+GDS_HOME=/path/where/is/GDS
 ```
 
 
