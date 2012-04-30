@@ -48,10 +48,6 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 	# Autoflush
 	$| = 1;
 
-	# Don't want zombie process just because we are bad parrents
-	# and we don't care about our chidren :p
-	$SIG{CHLD} = "IGNORE";
-
 	# Get command line options
 	getopts('dl:p:', \%opts);
 
@@ -88,11 +84,20 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 	print "GDS started, waiting for connections...\n";
 	
 	while (my $client = $server->accept()) {
+
+		# Don't want zombie process just because we are bad parrents
+		# and we don't care about our chidren :p
+		$SIG{CHLD} = "IGNORE";
+
 	        unless (my $masterpid = fork() ){
 		       	# We are in the child
 			#Child doesn't need the listner
 			close ($server);
 	  		printf "[%12s]", time;
+
+			# Git is a precious child and he can't live without good parents ...
+			# So our forked process will wait carefully for its own chidren.
+			$SIG{CHLD} = undef;
 			 
 			print " Connection from: ".inet_ntoa($client->peeraddr)."\n";
 	  		print $client "Welcome on GDS, please make your request.\r\n";
