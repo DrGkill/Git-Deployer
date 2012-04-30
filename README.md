@@ -79,6 +79,7 @@ $ vim GDS.config
 	port		= 32337
 	pidfile		= /var/run/gds.pid
 	logfile		= /var/log/gds.log
+	git-deployer	= /path/to/git-deployer.pl
 	##
 
 	## For Git-deployer
