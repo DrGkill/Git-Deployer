@@ -141,7 +141,7 @@ my @wp_files = ();
         log_this(\@buffer,  "[$project] No project directory yet\n") if (!opendir(DIR, "$local_path/$project/.git"));
         if (!readdir DIR){
         	# No ! I create it.
-		my $git_init_cmd = "$git clone --depth=$depth -b $branch $git_url" 
+		my $git_init_cmd = "$git clone --depth=$depth -b $branch $git_url"; 
         	log_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
         	chdir "$local_path";
         	log_this(\@buffer,  "		cd $local_path\n");

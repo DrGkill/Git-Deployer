@@ -112,7 +112,9 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 					#print "\n*** Fin de connexion sur PID $$ ***\n";
 				} 
 				else {
-					if($rep =~ /Project: .*\/([\w\-\.]+)\.git Branch: ([\w\-]+)/) {
+					if($rep =~ /Project: .*\/([\w\-\.]+)\.git Branch: ([\w\-]+)/ 
+						or $rep =~ /Project: ([\w\-\.]+)\.git Branch: ([\w\-]+)/) 
+					{
 						print $client "Recognized Project : $1\r\n";
 						print $client "Recognized Branch : $2\r\n";
 						$_PROJECT 	= $1;
