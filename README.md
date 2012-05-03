@@ -46,6 +46,11 @@ or for Debian :
 $ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl
 ```
 
+Clone the project into your favorite directory :
+```
+$ git clone git://github.com/DrGkill/Git-Deployer.git
+```
+
 Place the GDS_start_script in /etc/init.d directory and set it executable :
 
 ```

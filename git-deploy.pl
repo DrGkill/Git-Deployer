@@ -4,7 +4,7 @@
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
 # Last mod	16.01.2011
-# Version:	1.0b
+# Version:	1.1
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
@@ -110,9 +110,7 @@ my @wp_files = ();
 	my $local_path  = trim($config->{$project}->{"local_project_path"});
 	my $depth       = trim($config->{$project}->{"depth"});
 	my $branch      = trim($config->{$project}->{"branch"});
-	my $user        = trim($config->{$project}->{"user"});
-	my $server      = trim($config->{$project}->{"server"});
-	my $git_project = trim($config->{$project}->{"git_project"});
+	my $git_url	= trim($config->{$project}->{"git_project"});
 
 	my $db_host	= trim($config->{$project}->{"db_host"});
 	my $db_port	= trim($config->{$project}->{"db_port"});
@@ -143,13 +141,13 @@ my @wp_files = ();
         log_this(\@buffer,  "[$project] No project directory yet\n") if (!opendir(DIR, "$local_path/$project/.git"));
         if (!readdir DIR){
         	# No ! I create it.
+		my $git_init_cmd = "$git clone --depth=$depth -b $branch $git_url" 
         	log_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
         	chdir "$local_path";
         	log_this(\@buffer,  "		cd $local_path\n");
-        	log_this(\@buffer,  "		$git clone --depth=$depth -b $branch $user://$server/$git_project\n");
+		log_this(\@buffer,  "		$git_init_cmd\n");
 
-		$project_status = system("$git clone --depth=$depth -b $branch $user://$server/$git_project\n");
-
+		$project_status = system($git_init_cmd);
         }
         else {
         	log_this(\@buffer,  "[$project] Project still exists, updating it ...\n");
