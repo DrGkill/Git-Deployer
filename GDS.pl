@@ -100,9 +100,11 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 			$SIG{CHLD} = undef;
 			 
 			print " Connection from: ".inet_ntoa($client->peeraddr)."\n";
-	  		print $client "*********************************************\r\n";
-			print $client "* Welcome on GDS, please make your request. *\r\n";
-			print $client "*********************************************\r\n";
+			print $client "***********************************************\r\n";
+                        print $client "**               Welcome to GDS              **\r\n";
+                        print $client "***********************************************\r\n";
+                        print $client "please make your request.\r\n";
+	  		
 
 	  		while(my $rep = <$client>) {
 			
@@ -111,7 +113,7 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 				if ( $rep =~ /^QUIT/i) {
 					print $client "Bye!\n";
 					close($client);
-					#print "\n*** Fin de connexion sur PID $$ ***\n";
+					print "\n*** Fin de connexion sur PID $$ ***\n";
 				} 
 				else {
 					if($rep =~ /Project: .*\/([\w\-\.]+)\.git Branch: ([\w\-]+)/ 
