@@ -100,7 +100,9 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 			$SIG{CHLD} = undef;
 			 
 			print " Connection from: ".inet_ntoa($client->peeraddr)."\n";
-	  		print $client "Welcome on GDS, please make your request.\r\n";
+	  		print $client "*********************************************\r\n";
+			print $client "* Welcome on GDS, please make your request. *\r\n";
+			print $client "*********************************************\r\n";
 
 	  		while(my $rep = <$client>) {
 			
@@ -123,6 +125,7 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 						# Send the STDout to the client.
 						$standard_out = select($client);
 						# Launch git-deployer
+						print "No git deployer found :( Check your config file.\n" unless(-e $gitdeployer);
 						print "Launching Git Deployer...\n";
 						require "$gitdeployer";
 						
