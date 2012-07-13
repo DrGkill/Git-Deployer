@@ -124,6 +124,7 @@ my @wp_files = ();
 
 	$> = (getpwnam($sysuser))[2];
 	$EUID= (getpwnam($sysuser))[2];
+	$ENV{'HOME'}=(getpwnam($sysuser))[7];
 
 	# init the mysql and perm file array
 	@mysql_files = ();
