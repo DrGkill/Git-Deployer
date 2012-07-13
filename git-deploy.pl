@@ -134,7 +134,10 @@ my @wp_files = ();
         unless (-e $local_path){
 		log_this(\@buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
 		log_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
-                die;
+		log_this(\@buffer,  "[$project] Ok. I try to create $local_path...");
+		mkdir $local_path unless -d $local_path;
+                die " [KO] Wasn't able to create the dir :(" unless -d $local_path;
+		log_this(\@buffer,  " [OK]";
 	}
 
         # Is the project is git initted ?
@@ -142,8 +145,8 @@ my @wp_files = ();
         log_this(\@buffer,  "[$project] No project directory yet\n") if (!opendir(DIR, "$local_path/.git"));
         if (!readdir DIR){
         	# No ! I create it.
-		my $git_init_cmd = "$git clone --depth=$depth -b $branch $git_url $local_path";
-		mkdir $local_path unless -d $local_path;
+		my $git_init_cmd = "su - $sysuser -c '$git clone --depth=$depth -b $branch $git_url $local_path'";
+	
         	log_this(\@buffer,  "[$project] Project doesn't exists, creating it...\n");
         	chdir "$local_path";
         	log_this(\@buffer,  "		cd $local_path\n");
