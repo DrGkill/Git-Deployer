@@ -132,12 +132,12 @@ my @wp_files = ();
 
 	# Is the project destination path exists ?
         unless (-e $local_path){
-		log_this(\@buffer,  "[$project] Your set destination directory does not exists. Create it and rerun the deployment.\n");	
+		log_this(\@buffer,  "[$project] Your set destination directory does not exists.\n");	
 		log_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
-		log_this(\@buffer,  "[$project] Ok. I try to create $local_path...");
+		log_this(\@buffer,  "[$project] I try to create $local_path...");
 		mkdir $local_path unless -d $local_path;
-                die " [KO] Wasn't able to create the dir :(" unless -d $local_path;
-		log_this(\@buffer,  " [OK]");
+                die " [KO] Wasn't able to create the dir :(\n" unless -d $local_path;
+		log_this(\@buffer,  " [OK]\n");
 	}
 
         # Is the project is git initted ?
