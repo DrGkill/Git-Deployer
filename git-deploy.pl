@@ -127,7 +127,13 @@ my @wp_files = ();
 	$> = (getpwnam($sysuser))[2];
 	$( = (getpwnam($sysuser))[3];
 	$) = (getpwnam($sysuser))[3];	
+	$UID = (getpwnam($sysuser))[2];
+	$GID = (getpwnam($sysuser))[3];
+	$EUID = (getpwnam($sysuser))[2];
+	$EGID = (getpwnam($sysuser))[3];
+	
 	$ENV{'HOME'}=(getpwnam($sysuser))[7];
+	use lib qw(.);
 
 	# init the mysql and perm file array
 	@mysql_files = ();
@@ -179,9 +185,14 @@ my @wp_files = ();
 	#Project has been loaded or updated, so begin to load sql file and set file perms
 	if ($project_status == 0) {
 			
+		my %find_options = {
+			"wanted" 	=> 	\&SQLfile;
+			"untaint"	=>	1;
+		}
+
 		# Update the database
 		log_this(\@buffer,  "		Searching for sql file ...");
-		find(\&SQLfile, "$local_path");
+		find(%find_options, "$local_path");
 		log_this(\@buffer,  "No update sql files found\n") if (scalar(@mysql_files) == 0);
 			
 		foreach my $sql_file (@mysql_files) {
@@ -193,8 +204,9 @@ my @wp_files = ();
 				log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
 			}
 		}
-
+		
 		# Execute the WordPress script 
+		$find_options{"wanted"} = \&WPfile;
 		log_this(\@buffer,  "		Searching for WordPress script ...");
 		find(\&WPfile, "$local_path");
 		log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
@@ -205,6 +217,7 @@ my @wp_files = ();
 		}
 
 		# Set the file permissions :
+		$find_options{"wanted"} = \&PERMfile;
 		log_this(\@buffer,  "		Searching for permission map file...");
 		find(\&PERMfile, "$local_path");
 		log_this(\@buffer,  "No permission script found\n") if (scalar(@perm_files) == 0);	
