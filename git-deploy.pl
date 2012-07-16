@@ -63,7 +63,7 @@
 use strict;
 use Config::Auto;
 use MIME::Lite;
-#use DBD::mysql;
+use POSIX qw(setuid);
 use File::Find;
 use English;
 use Data::Dumper;
@@ -123,15 +123,12 @@ my @wp_files = ();
 	my $sysuser	= trim($config->{$project}->{"sysuser"});
 
 	
-	$< = (getpwnam($sysuser))[2];
-	$> = (getpwnam($sysuser))[2];
-	$( = (getpwnam($sysuser))[3];
-	$) = (getpwnam($sysuser))[3];	
-	$UID = (getpwnam($sysuser))[2];
-	$GID = (getpwnam($sysuser))[3];
 	$EUID = (getpwnam($sysuser))[2];
-	$EGID = (getpwnam($sysuser))[3];
-	
+        $EGID = (getpwnam($sysuser))[3];
+	$UID = (getpwnam($sysuser))[2];
+        $GID = (getpwnam($sysuser))[3];
+	POSIX::setuid((getpwnam($sysuser))[2]);
+
 	$ENV{'HOME'}=(getpwnam($sysuser))[7];
 	use lib qw(.);
 
@@ -184,15 +181,10 @@ my @wp_files = ();
 
 	#Project has been loaded or updated, so begin to load sql file and set file perms
 	if ($project_status == 0) {
-			
-		my %find_options = {
-			"wanted" 	=> 	\&SQLfile;
-			"untaint"	=>	1;
-		}
-
+		$ENV{"PATH"} = "";			
 		# Update the database
 		log_this(\@buffer,  "		Searching for sql file ...");
-		find(%find_options, "$local_path");
+		find({wanted => \&SQLfile, untaint => 1}, "$local_path");
 		log_this(\@buffer,  "No update sql files found\n") if (scalar(@mysql_files) == 0);
 			
 		foreach my $sql_file (@mysql_files) {
@@ -206,9 +198,8 @@ my @wp_files = ();
 		}
 		
 		# Execute the WordPress script 
-		$find_options{"wanted"} = \&WPfile;
 		log_this(\@buffer,  "		Searching for WordPress script ...");
-		find(\&WPfile, "$local_path");
+		find({wanted => \&WPfile, untaint => 1}, "$local_path");
 		log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
 			
 		foreach my $wp_file (@wp_files) {
@@ -217,9 +208,8 @@ my @wp_files = ();
 		}
 
 		# Set the file permissions :
-		$find_options{"wanted"} = \&PERMfile;
 		log_this(\@buffer,  "		Searching for permission map file...");
-		find(\&PERMfile, "$local_path");
+		find({wanted => \&PERMfile, untaint => 1}, "$local_path");
 		log_this(\@buffer,  "No permission script found\n") if (scalar(@perm_files) == 0);	
 
 		foreach my $perm_file (@perm_files) {
