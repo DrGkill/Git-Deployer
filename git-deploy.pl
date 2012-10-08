@@ -3,8 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Last mod	16.01.2011
-# Version:	1.1
+# Last mod	08.10.2012
+# Version:	1.2
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
