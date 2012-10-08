@@ -61,12 +61,15 @@
 #       [DONE] Run the script with unprivileged user (change with the config)
 
 use strict;
+use Switch;
 use Config::Auto;
 use MIME::Lite;
 use POSIX qw(setuid);
 use File::Find;
 use English;
 use Data::Dumper;
+use Net::SMTP::TLS;
+use Net::SMTP::SSL;
 
 $| = 1;
 
@@ -77,7 +80,15 @@ my $config = Config::Auto::parse();
 my $git 	= trim($config->{"engine-conf"}->{"git"});
 my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
 my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
-my $smtp	= trim($config->{"engine-conf"}->{"smtp"});
+my $smtp;
+$smtp->{Host}	= trim($config->{"engine-conf"}->{"smtp"});
+$smtp->{Sender}	= trim($config->{"engine-conf"}->{"smtp_from"});
+(defined $config->{"engine-conf"}->{"smtp_method"}) ? $smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"}) : $smtp->{Proto} = "NONE";
+if ($smtp->{Proto} ne "NONE"){
+	$smtp->{Port} 		= $config->{"engine-conf"}->{"smtp_port"};
+	$smtp->{AuthUser} 	= $config->{"engine-conf"}->{"smtp_user"};
+	$smtp->{AuthPass}	= $config->{"engine-conf"}->{"smtp_pass"};
+}
 
 die("Git is not installed\n") unless (-e $git);
 print "WARNING : No MySQL client.\n" unless (-e $mysql);
@@ -341,16 +352,49 @@ sub mail_this {
 	}
 
         my $Message = new MIME::Lite (
-                From =>'deployment@omegacube.fr',
+                From => $smtp->{sender},
                 To =>$recipient,
                 Cc =>$cc,
                 Subject =>$title,
                 Type =>'TEXT',
                 Data =>$message
         );
-
-        $Message -> send("smtp", $smtp);
-
+	
+	switch ($smtp->{Proto}) {
+		case "NONE"	{ $Message -> send("smtp", $smtp->{Host}, Port=>$smtp->{Port}) }
+		case "CLASSIC"	{ 
+			$Message -> send("smtp", 
+				$smtp->{Host}, 
+				Port=>$smtp->{Port}, 
+				AuthUser=>$smtp->{AuthUser}, 
+				AuthPass=>$smtp->{AuthPass})
+		}
+		case "TLS"	{ 
+			my $mailer = new Net::SMTP::TLS( 
+				$smtp->{Host},
+				Port    => $smtp->{Port},
+				User    => $smtp->{AuthUser},
+				Password=> $smtp->{AuthPass});
+			$mailer->mail($smtp->{sender});  
+			$mailer->to($recipient);  
+			$mailer->data;
+			$mailer->datasend($Message->as_string);
+			$mailer->dataend;  
+			$mailer->quit;
+		}
+		case "SSL"	{
+			my $mailer = new Net::SMTP::SSL(
+				Port    => $smtp->{Port},
+				AuthUser=> $smtp->{AuthUser},
+				AuthPass=> $smtp->{AuthPass});
+			$mailer->mail($smtp->{sender});  
+			$mailer->to($recipient);  
+			$mailer->data;
+			$mailer->datasend($Message->as_string);
+			$mailer->dataend;  
+			$mailer->quit;
+		}
+	}
         return 0;
 }
 

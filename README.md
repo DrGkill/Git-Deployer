@@ -38,12 +38,14 @@ $ perl -MCPAN -e shell
 > install File::Find
 > install MIME::Lite
 > install Proc::Daemon
+> install Net::SMTP::TLS
+> install Net::SMTP::SSL
 ```
 
 or for Debian :
 
 ```
-$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl
+$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl libnet-smtp-tls-perl libnet-smtp-ssl-perl
 ```
 
 Clone the project into your favorite directory :
@@ -92,6 +94,12 @@ $ vim GDS.config
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
 	smtp		= smtp.example.com
+	smtp_from	= sender@example.com
+	### SMTP send method : NONE|CLASSIC|TLS|SSL, default none
+	# smtp_method	= authclassic
+	# smtp_port	= 465 (default 25)
+	# smtp_user	= myusername
+	# smtp_pass	= mystrongpassword
 
 [git-deploy]
 	branch = master
