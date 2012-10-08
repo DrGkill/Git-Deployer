@@ -28,6 +28,8 @@ The project needs sevral Perl plugins to work properly:
 * File::Find
 * MIME::Lite
 * Proc::Daemon
+* Net::SMTP::TLS
+* Net::SMTP::SSL
 
 To install them : 
 
