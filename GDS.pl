@@ -34,6 +34,7 @@ use Config::Auto;
 use Data::Dumper;
 use Getopt::Std;
 use Proc::Daemon;
+use lib qw(.);
 
 my %opts	= ();
 my $config 	= Config::Auto::parse();

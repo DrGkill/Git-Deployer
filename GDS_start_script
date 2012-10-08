@@ -15,7 +15,7 @@
 ### END INIT INFO
 
 
-GDS_HOME=/cygdrive/d/W3/SCRIPTS/Git-Deployer
+GDS_HOME=/home/Git-Deployer
 GDS_BIN=$GDS_HOME/GDS.pl
 GDS_PID=/var/run/gds.pid
 
