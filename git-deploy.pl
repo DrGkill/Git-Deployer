@@ -84,6 +84,7 @@ my $smtp;
 $smtp->{Host}	= trim($config->{"engine-conf"}->{"smtp"});
 $smtp->{Sender}	= trim($config->{"engine-conf"}->{"smtp_from"});
 (defined $config->{"engine-conf"}->{"smtp_method"}) ? $smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"}) : $smtp->{Proto} = "NONE";
+(defined $config->{"engine-conf"}->{"smtp_port"}) ? $smtp->{Port} = trim($config->{"engine-conf"}->{"smtp_port"}) : $smtp->{Port} = 25;
 if ($smtp->{Proto} ne "NONE"){
 	$smtp->{Port} 		= $config->{"engine-conf"}->{"smtp_port"};
 	$smtp->{AuthUser} 	= $config->{"engine-conf"}->{"smtp_user"};
