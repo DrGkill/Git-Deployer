@@ -4,9 +4,9 @@
 #
 # Script name : Git Deployer Server
 # Author : 	Guillaume Seigneuret
-# Date : 	16/01/12
+# Date : 	07/11/12
 # Type : 	Deamon
-# Version : 	1.1
+# Version : 	1.2.1b
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
@@ -43,7 +43,7 @@ my $PORT 	= trim($config->{"engine-conf"}->{"port"});
 my $PID_file	= trim($config->{"engine-conf"}->{"pidfile"});
 my $LOG_file	= trim($config->{"engine-conf"}->{"logfile"});
 my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
-
+my $debug	= 0;
 
 {
 	# Autoflush
@@ -128,8 +128,8 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 						# Send the STDout to the client.
 						$standard_out = select($client);
 						# Launch git-deployer
-						print "No git deployer found :( Check your config file.\n" unless(-e $gitdeployer);
-						print "Launching Git Deployer...\n";
+						print "No git deployer found :( Check your config file.\n" unless(-e $gitdeployer and not $debug);
+						print "Launching Git Deployer...\n" if $debug;
 						require "$gitdeployer";
 						
 						# restore the stdout
