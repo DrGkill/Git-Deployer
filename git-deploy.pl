@@ -79,7 +79,7 @@ our $_BRANCH;
 my $config = Config::Auto::parse();
         #print Dumper($config);
 
-my $debug	= trim($config->{"engine-conf"}->{"debug"};
+my $debug	= trim($config->{"engine-conf"}->{"debug"});
 my $git 	= trim($config->{"engine-conf"}->{"git"});
 my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
 my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
@@ -115,7 +115,7 @@ my @wp_files = ();
 
 	my $project = "";
 	$project = $ARGV[0] if(defined trim($config->{$ARGV[0]}));
-	if (defined $config->{$_PROJECT} #and 
+	if (defined $config->{$_PROJECT} and $_PROJECT ne ""
 		#	defined trim($config->{$_PROJECT}->{$_BRANCH}) 
 	) {
 		$project = $_PROJECT;
