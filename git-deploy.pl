@@ -157,9 +157,9 @@ my @wp_files = ();
 	@perm_files = ();
 
 	# Is the project destination path exists ?
-	print "[".$cgreen.$hostname.$cend."] Updating $project/$branch";
+	print "[".$cgreen.$hostname.$cend."] Updating $project/$branch ";
         unless (-e $local_path){
-		log_this(\@buffer,  "[".$cgreen.$project.$cend."] $cyel Your set destination directory does not exists.$cend\n",$debug);	
+		log_this(\@buffer,  "\n[".$cgreen.$project.$cend."] $cyel Your set destination directory does not exists.$cend\n",$debug);	
 		log_this(\@buffer,  "[".$cgreen.$project.$cend."] Tried local path : $local_path.\n",$debug);
 		log_this(\@buffer,  "[".$cgreen.$project.$cend."] I try to create $local_path...",$debug);
 		mkdir $local_path unless -d $local_path;
@@ -184,7 +184,7 @@ my @wp_files = ();
 		print ".";
         }
         else {
-        	log_this(\@buffer,  "[".$cgreen.$project.$cend."] Project still exists, updating it ...\n",$debug);
+        	log_this(\@buffer,  "\n[".$cgreen.$project.$cend."] Project still exists, updating it ...\n",$debug);
         	chdir "$local_path";
         	log_this(\@buffer,  "[".$cgreen.$project.$cend."] Trying to update ...\n",$debug);
 
@@ -245,15 +245,15 @@ my @wp_files = ();
 		}
 
 		log_this(\@buffer,  "\n[".$cgreen.$project.$cend."] Project successfully updated\n",$debug);
-		print $cgreen."OK".$cend."\n";
+		print $cgreen." OK".$cend."\n";
 	}
 	else {
 		log_this(\@buffer,  "\n[".$cred.$project.$cend."] Was not able to load the project. See your git config details.\n",$debug);
-		print $cred."ERROR".$cend."\n";
+		print $cred." ERROR".$cend."\n";
 	}
 
 	my @compl = read_file($errors_file);
-	print "Sending report to $contact via $smtp for the project $project\n";
+	print "Sending report to $contact via $smtp->{Host} for the project $project\n";
 	mail_this($smtp, $contact, "", "[Auto Deployment] $project ", \@buffer, \@compl);
 		
 	# Purge the error file
