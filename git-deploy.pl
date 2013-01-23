@@ -378,14 +378,13 @@ sub mail_this {
         );
 	
 	switch ($smtp->{Proto}) {
-		print "Protocol defined: ".$smtp->{Proto}."\n";
 		case "NONE"	{ $Message -> send("smtp", $smtp->{Host}, Port=>$smtp->{Port}) }
 		case "CLASSIC"	{ 
 			$Message -> send("smtp", 
 				$smtp->{Host}, 
 				Port=>$smtp->{Port}, 
 				AuthUser=>$smtp->{AuthUser}, 
-				AuthPass=>$smtp->{AuthPass})
+				AuthPass=>$smtp->{AuthPass}) || die "SASL Authentication failed\n";
 		}
 		case "TLS"	{ 
 			my $mailer = new Net::SMTP::TLS( 
@@ -393,7 +392,8 @@ sub mail_this {
 				Hello   => $smtp->{sender},
 				Port    => $smtp->{Port},
 				User    => $smtp->{AuthUser},
-				Password=> $smtp->{AuthPass});
+				Password=> $smtp->{AuthPass})
+			|| die "SASL authentication failed via TLS\n";
 			$mailer->mail($smtp->{sender});  
 			$mailer->to($recipient);  
 			$mailer->data;
@@ -407,7 +407,8 @@ sub mail_this {
 				Hello   => $smtp->{sender},
 				Port    => $smtp->{Port},
 				AuthUser=> $smtp->{AuthUser},
-				AuthPass=> $smtp->{AuthPass});
+				AuthPass=> $smtp->{AuthPass})
+			|| die "SASL authentication failed via SSL\n";
 			$mailer->mail($smtp->{sender});  
 			$mailer->to($recipient);  
 			$mailer->data;
