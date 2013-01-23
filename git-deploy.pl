@@ -80,7 +80,7 @@ my $config = Config::Auto::parse();
 my $git 	= trim($config->{"engine-conf"}->{"git"});
 my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
 my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
-my $smtp;
+my $smtp = ();
 $smtp->{Host}	= trim($config->{"engine-conf"}->{"smtp"});
 $smtp->{Sender}	= trim($config->{"engine-conf"}->{"smtp_from"});
 (defined $config->{"engine-conf"}->{"smtp_method"}) ? $smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"}) : $smtp->{Proto} = "NONE";
@@ -235,7 +235,7 @@ my @wp_files = ();
 	}
 
 	my @compl = read_file($errors_file);
-	print "Sending report to $contact via $smtp for the project $project\n";
+	print "Sending report to $contact via ".$smtp->{Host}." for the project $project\n";
 	mail_this($smtp, $contact, "", "[Auto Deployment] $project ", \@buffer, \@compl);
 		
 	# Purge the error file
@@ -372,6 +372,7 @@ sub mail_this {
 		case "TLS"	{ 
 			my $mailer = new Net::SMTP::TLS( 
 				$smtp->{Host},
+				Hello   => $smtp->{sender},
 				Port    => $smtp->{Port},
 				User    => $smtp->{AuthUser},
 				Password=> $smtp->{AuthPass});
@@ -384,6 +385,8 @@ sub mail_this {
 		}
 		case "SSL"	{
 			my $mailer = new Net::SMTP::SSL(
+				$smtp->{Host},
+				Hello   => $smtp->{sender},
 				Port    => $smtp->{Port},
 				AuthUser=> $smtp->{AuthUser},
 				AuthPass=> $smtp->{AuthPass});

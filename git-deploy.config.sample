@@ -1,3 +1,4 @@
+# Config file sample for Git-Deployer v1.2.1
 [engine-conf]
 	listen		= localhost
 	port		= 32337
@@ -9,27 +10,27 @@
 	error_file	= /tmp/git-deploy.err
 	smtp		= smtp.example.com
 	smtp_from	= sender@example.com
-	### SMTP send method : NONE|CLASSIC|TLS|SSL, default none
-	# smtp_method	= authclassic
+	### SMTP authentication and protocol : NONE|CLASSIC|TLS|SSL, default none
+	# smtp_method	= CLASSIC
 	# smtp_port	= 465 (default 25)
 	# smtp_user	= myusername
 	# smtp_pass	= mystrongpassword
 
 [git-deploy]
-        branch = master
-        depth = 1  
-        git_project = git://github.com/DrGkill/Git-Deployer.git
+	branch = master
+	depth = 1  
+	git_project = git://github.com/DrGkill/Git-Deployer.git
 	# Can also work with SSH connection:
 	# git_project = git@github.com:DrGkill/Git-Deployer.git
 
-        local_project_path = /home/test
+	local_project_path = /home/test
 	contact	= deploywatcher@example.com
 
-        db_host = mydatabase
-        db_port = 3306
-        db_name = gitdeploy
-        db_user = gitdeploy
-        db_pass = gitdeploy_secret
+	db_host = mydatabase
+	db_port = 3306
+	db_name = gitdeploy
+	db_user = gitdeploy
+	db_pass = gitdeploy_secret
 
 	sysuser = git
 
