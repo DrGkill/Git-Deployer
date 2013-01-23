@@ -133,6 +133,9 @@ my @wp_files = ();
 
 	my $sysuser	= trim($config->{$project}->{"sysuser"});
 
+	if ($local_path eq ""){
+		die "Project path was not defined in the config file... Exiting\n";
+	}
 	
 	$EUID = (getpwnam($sysuser))[2];
         $EGID = (getpwnam($sysuser))[3];
@@ -148,7 +151,7 @@ my @wp_files = ();
 	@perm_files = ();
 
 	# Is the project destination path exists ?
-        unless (-e $local_path){
+	unless (-e $local_path){
 		log_this(\@buffer,  "[$project] Your set destination directory does not exists.\n");	
 		log_this(\@buffer,  "[$project] Tried local path : $local_path.\n");
 		log_this(\@buffer,  "[$project] I try to create $local_path...");
@@ -362,6 +365,7 @@ sub mail_this {
         );
 	
 	switch ($smtp->{Proto}) {
+		print "Protocol defined: ".$smtp->{Proto};
 		case "NONE"	{ $Message -> send("smtp", $smtp->{Host}, Port=>$smtp->{Port}) }
 		case "CLASSIC"	{ 
 			$Message -> send("smtp", 
