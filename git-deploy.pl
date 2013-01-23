@@ -83,8 +83,21 @@ my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
 my $smtp = ();
 $smtp->{Host}	= trim($config->{"engine-conf"}->{"smtp"});
 $smtp->{Sender}	= trim($config->{"engine-conf"}->{"smtp_from"});
-(defined $config->{"engine-conf"}->{"smtp_method"}) ? $smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"}) : $smtp->{Proto} = "NONE";
-(defined $config->{"engine-conf"}->{"smtp_port"}) ? $smtp->{Port} = trim($config->{"engine-conf"}->{"smtp_port"}) : $smtp->{Port} = 25;
+
+if (defined $config->{"engine-conf"}->{"smtp_method"}) {
+	$smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"})
+}
+else {
+	$smtp->{Proto} = "NONE";
+}
+
+if (defined $config->{"engine-conf"}->{"smtp_port"}) {
+	$smtp->{Port} = trim($config->{"engine-conf"}->{"smtp_port"})
+}
+else {
+	$smtp->{Port} = 25;
+}
+
 if ($smtp->{Proto} ne "NONE"){
 	$smtp->{AuthUser} 	= $config->{"engine-conf"}->{"smtp_user"};
 	$smtp->{AuthPass}	= $config->{"engine-conf"}->{"smtp_pass"};
@@ -365,7 +378,7 @@ sub mail_this {
         );
 	
 	switch ($smtp->{Proto}) {
-		print "Protocol defined: ".$smtp->{Proto};
+		print "Protocol defined: ".$smtp->{Proto}."\n";
 		case "NONE"	{ $Message -> send("smtp", $smtp->{Host}, Port=>$smtp->{Port}) }
 		case "CLASSIC"	{ 
 			$Message -> send("smtp", 
