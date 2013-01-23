@@ -82,33 +82,30 @@ Begin lines by '#' to make comments
 ```
 $ mv git-deploy.config.sample GDS.config
 $ vim GDS.config
+# Config file sample for Git-Deployer v1.2.1
 [engine-conf]
-	## Only for GDS
 	listen		= localhost
 	port		= 32337
 	pidfile		= /var/run/gds.pid
 	logfile		= /var/log/gds.log
-	git-deployer	= /path/to/git-deployer.pl
-	##
-
-	## For Git-deployer
+	git-deployer	= /home/Git-Deployer/git-deploy.pl
 	git 		= /usr/bin/git
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
 	smtp		= smtp.example.com
 	smtp_from	= sender@example.com
-	### SMTP send method : NONE|CLASSIC|TLS|SSL, default none
-	# smtp_method	= authclassic
+	### SMTP authentication and protocol : NONE|CLASSIC|TLS|SSL, default none
+	# smtp_method	= CLASSIC
 	# smtp_port	= 465 (default 25)
 	# smtp_user	= myusername
 	# smtp_pass	= mystrongpassword
 
 [git-deploy]
 	branch = master
-	depth = 1
-	user = git
-	server = github.com
-	git_project = git-deploy/git-deploy.git
+	depth = 1  
+	git_project = git://github.com/DrGkill/Git-Deployer.git
+	# Can also work with SSH connection:
+	# git_project = git@github.com:DrGkill/Git-Deployer.git
 
 	local_project_path = /home/test
 	contact	= deploywatcher@example.com

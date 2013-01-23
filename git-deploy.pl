@@ -99,8 +99,8 @@ else {
 }
 
 if ($smtp->{Proto} ne "NONE"){
-	$smtp->{AuthUser} 	= $config->{"engine-conf"}->{"smtp_user"};
-	$smtp->{AuthPass}	= $config->{"engine-conf"}->{"smtp_pass"};
+	$smtp->{AuthUser} 	= trim($config->{"engine-conf"}->{"smtp_user"});
+	$smtp->{AuthPass}	= trim($config->{"engine-conf"}->{"smtp_pass"});
 }
 
 die("Git is not installed\n") unless (-e $git);
