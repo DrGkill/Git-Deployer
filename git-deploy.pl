@@ -3,8 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Last mod	08.10.2012
-# Version:	1.2
+# Last mod	23.01.2013
+# Version:	1.2.1
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
@@ -113,8 +113,8 @@ my @wp_files = ();
 	}
 
 	if ($project eq ""){
-		print "Unable te deploy anything because nor ARGV0 nor \$_PROJECT was set\n.";
-		die "Unable te deploy anything because nor ARGV0 nor \$_PROJECT was set\n.";
+		print "Unable te deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n.";
+		die "Unable te deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n.";
 	}
 
 	# Loading the project settings
@@ -184,6 +184,7 @@ my @wp_files = ();
                 chomp($status);
                 if ($status eq "Already up-to-date."){
         	        log_this(\@buffer,  "[$project] Already up to date.\n");
+        	        exit 0;
                 }
 		
 		# project_status takes the return code of the "git pull" command
