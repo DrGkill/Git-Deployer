@@ -82,7 +82,7 @@ Begin lines by '#' to make comments
 ```
 $ mv git-deploy.config.sample GDS.config
 $ vim GDS.config
-# Config file sample for Git-Deployer v1.2.1
+# Config file sample for Git-Deployer v1.2.2
 [engine-conf]
 	listen		= localhost
 	port		= 32337
@@ -116,6 +116,9 @@ $ vim GDS.config
 	db_user = gitdeploy
 	db_pass = gitdeploy_secret
 
+	WPscripts = off
+	SetPerm = off
+
 	sysuser = git
 
 [end]
@@ -124,4 +127,16 @@ $ vim GDS.config
 <a name="ss"></a>
 ### Special Scripts
 
-To be documented.
+Git Deployer is able to launch scripts after having pulled a project.
+You can specify a MySQL script file, WordPress script file and/or a permission mapping file.
+
+To enable search for MySQL script file, you have to define a database in the project config section.
+So need at least db_host to be set.
+Then push in your project a file ending with ".sqlupdate". File will be executed with the system user defined in the project config section and deleted after execution.
+
+To enable search for WordPress script file (WPcli), you have to set "WPscripts = on" into the concerned project config section.
+Then push in your project a file ending with ".wpactivate". File will be executed with the system user defined in the project config section and deleted after execution.
+
+To enable search for permission mapping file, you have to set "SetPerm = on" into the concerned project config section.
+Then push in your project a file ending with ".permission". File will be executed with the system user defined in the project config section and deleted after execution.
+The mapping file has to be generated with the map_perm.pl tool contained into the project.

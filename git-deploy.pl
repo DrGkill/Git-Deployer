@@ -3,8 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Last mod	23.01.2013
-# Version:	1.2.1
+# Last mod	04.04.2013
+# Version:	1.2.2
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
@@ -210,39 +210,45 @@ my @wp_files = ();
 	#Project has been loaded or updated, so begin to load sql file and set file perms
 	if ($project_status == 0) {
 		$ENV{"PATH"} = "";			
-		# Update the database
-		log_this(\@buffer,  "		Searching for sql file ...");
-		find({wanted => \&SQLfile, untaint => 1}, "$local_path");
-		log_this(\@buffer,  "No update sql files found\n") if (scalar(@mysql_files) == 0);
+		# Update the database*
+		if (defined $config->{$project}->{"db_host"}) {
+			log_this(\@buffer,  "		Searching for sql file ...");
+			find({wanted => \&SQLfile, untaint => 1}, "$local_path");
+			log_this(\@buffer,  "No update sql files found\n") if (scalar(@mysql_files) == 0);
 			
-		foreach my $sql_file (@mysql_files) {
-			if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file) == 0) {
-				log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
-				unlink($sql_file);
-			}
-			else {
-				log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
+			foreach my $sql_file (@mysql_files) {
+				if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file) == 0) {
+					log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n");
+					unlink($sql_file);
+				}
+				else {
+					log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n");
+				}
 			}
 		}
-		
-		# Execute the WordPress script 
-		log_this(\@buffer,  "		Searching for WordPress script ...");
-		find({wanted => \&WPfile, untaint => 1}, "$local_path");
-		log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
+
+		if ($config->{$project}->{"WPscripts"} eq "on") {
+			# Execute the WordPress script 
+			log_this(\@buffer,  "		Searching for WordPress script ...");
+			find({wanted => \&WPfile, untaint => 1}, "$local_path");
+			log_this(\@buffer,  "No WordPress script found\n") if (scalar(@wp_files) == 0);
 			
-		foreach my $wp_file (@wp_files) {
-			print `$wp_file`;
-			unlink($wp_file);
+			foreach my $wp_file (@wp_files) {
+				print `$wp_file`;
+				unlink($wp_file);
+			}
 		}
 
-		# Set the file permissions :
-		log_this(\@buffer,  "		Searching for permission map file...");
-		find({wanted => \&PERMfile, untaint => 1}, "$local_path");
-		log_this(\@buffer,  "No permission script found\n") if (scalar(@perm_files) == 0);	
-
-		foreach my $perm_file (@perm_files) {
-			set_perm("$local_path/$project", $perm_file);
-			unlink($perm_file);
+		if ( $config->{$project}->{"SetPerm"} eq "on") {
+			# Set the file permissions :
+			log_this(\@buffer,  "		Searching for permission map file...");
+			find({wanted => \&PERMfile, untaint => 1}, "$local_path");
+			log_this(\@buffer,  "No permission script found\n") if (scalar(@perm_files) == 0);	
+	
+			foreach my $perm_file (@perm_files) {
+				set_perm("$local_path/$project", $perm_file);
+				unlink($perm_file);
+			}
 		}
 
 		log_this(\@buffer,  "\n[$project] Project successfully updated\n");
