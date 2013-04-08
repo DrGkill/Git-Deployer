@@ -51,6 +51,7 @@ $ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libp
 ```
 
 Clone the project into your favorite directory :
+
 ```
 $ git clone git://github.com/DrGkill/Git-Deployer.git
 ```
