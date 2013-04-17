@@ -101,8 +101,7 @@ $ vim GDS.config
 	# smtp_user	= myusername
 	# smtp_pass	= mystrongpassword
 
-[git-deploy]
-	branch = master
+[git-deploy/master]
 	depth = 1  
 	git_project = git://github.com/DrGkill/Git-Deployer.git
 	# Can also work with SSH connection:

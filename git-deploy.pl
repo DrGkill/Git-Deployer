@@ -3,8 +3,8 @@
 # Script Name:	Git Auto deploy
 # Author: 	Guillaume Seigneuret
 # Date: 	13.01.2010
-# Last mod	04.04.2013
-# Version:	1.2.2
+# Last mod	17.04.2013
+# Version:	1.3
 # 
 # Usage:	Execute it via crontab or shell prompt, or with the GSD server.
 # 
@@ -118,11 +118,15 @@ my @wp_files = ();
 	open (STDERR,">$errors_file");
 
 	my $project = "";
-	$project = $ARGV[0] if(defined trim($config->{$ARGV[0]}));
-	if (defined $config->{$_PROJECT} #and 
-		#	defined trim($config->{$_PROJECT}->{$_BRANCH}) 
+
+	# Initializing "project" variable via shell args.
+	$project = $ARGV[0]."/".$ARGV[1] if(defined trim($config->{$ARGV[0]}) 
+		and defined trim($config->{$ARGV[1]}));
+
+	# Initializing "project" variable via GDS.
+	if (defined $config->{"$_PROJECT/$_BRANCH"}
 	) {
-		$project = $_PROJECT;
+		$project = "$_PROJECT/$_BRANCH";
 	}
 
 	if ($project eq ""){
@@ -133,7 +137,7 @@ my @wp_files = ();
 	# Loading the project settings
 	my $local_path  = trim($config->{$project}->{"local_project_path"});
 	my $depth       = trim($config->{$project}->{"depth"});
-	my $branch      = trim($config->{$project}->{"branch"});
+	my $branch      = $_BRANCH;
 	my $git_url	= trim($config->{$project}->{"git_project"});
 
 	my $db_host	= trim($config->{$project}->{"db_host"});
