@@ -112,14 +112,14 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
                         	print $client "**               Welcome to GDS              **\r\n";
                         	print $client "***********************************************\r\n";
                         }
-			print $client BOLD GREEN "[$hostname]: please make your request.\r\n";
+			print $client BOLD GREEN "[$hostname]: Connexion OK. please make your request.\r\n";
 
 	  		while(my $rep = <$client>) {
 			
 				printf "[%12s] Asked to interpret : %s", time, $rep;
 
 				if ( $rep =~ /^QUIT/i) {
-					print $client BOLD GREEN "[$hostname]:";				
+					print $client BOLD GREEN "[$hostname]: ";				
 					print $client "Bye!\n";
 					close($client);
 					print "\n*** Fin de connexion sur PID $$ ***\n";
@@ -135,7 +135,7 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 							print "Recognized Project : $1\r\n";
 							print "Recognized Branch : $2\r\n";
 						}
-						print BOLD GREEN "[$hostname]:";
+						print BOLD GREEN "[$hostname]: ";
 						print BOLD WHITE "$1/$2\r\n";
 						$_PROJECT 	= $1;
 						$_BRANCH	= $2;
@@ -148,7 +148,7 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 							close($client);
 						}
 						
-						print BOLD GREEN "[$hostname]:";
+						print BOLD GREEN "[$hostname]: ";
 						print BOLD WHITE "Launching Git Deployer...\n";
 						require "$gitdeployer";
 						
