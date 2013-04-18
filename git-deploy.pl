@@ -286,7 +286,7 @@ sub SQLfile {
         my $file = $File::Find::name;
 
         if ($file =~ /.*update.*\.sql$/){
-                log_this(\@buffer,  "\n		Found SQL update file : $file\n",$project,"ok");
+                log_this(\@buffer,  "\n		Found SQL update file : $file\n","","ok");
 		push(@mysql_files, $file);
         }
 }
@@ -295,7 +295,7 @@ sub PERMfile {
         my $file = $File::Find::name;
 
         if ($file =~ /\.permission$/){
-                log_this(\@buffer,  "\n		Found permission map file : $file\n",$project,"ok");
+                log_this(\@buffer,  "\n		Found permission map file : $file\n","","ok");
 		push(@perm_files, $file);
         }
 }
@@ -304,7 +304,7 @@ sub WPfile {
         my $file = $File::Find::name;
 
         if ($file =~ /\.wpactivate$/){
-                log_this(\@buffer,  "\n		Found wordpress script : $file\n",$project,"ok");
+                log_this(\@buffer,  "\n		Found wordpress script : $file\n","","ok");
 		push(@wp_files, $file);
         }
 }
