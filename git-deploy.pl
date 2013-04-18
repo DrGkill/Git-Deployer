@@ -107,8 +107,9 @@ if ($smtp->{Proto} ne "NONE"){
 	$smtp->{AuthPass}	= trim($config->{"engine-conf"}->{"smtp_pass"});
 }
 
+print BOLD RED "[$hostname]: Git is not installed !!!\n";
 die("Git is not installed\n") unless (-e $git);
-print "WARNING : No MySQL client.\n" unless (-e $mysql);
+print BOLD ORANGE "WARNING : No MySQL client.\n" unless (-e $mysql);
 
 # Create a buffer for logging message during the script execution.
 my @buffer = ();
@@ -266,10 +267,10 @@ my @wp_files = ();
 			}
 		}
 
-		log_this(\@buffer,  "\nProject successfully updated\n",$project,"ok");
+		log_this(\@buffer,  "Project successfully updated\n",$project,"ok");
 	}
 	else {
-		log_this(\@buffer,  "\n[$project] Was not able to load or update the project. See git details.\n",$project,"ko");
+		log_this(\@buffer,  "[$project] Was not able to load or update the project. See git details.\n",$project,"ko");
 	}
 
 	my @compl = read_file($errors_file);
@@ -358,15 +359,15 @@ sub log_this {
 	my ($buffer, $message, $project, $status) = @_;
 	push(@$buffer, $message);
 	if ($status eq "ok") {
-		print BOLD GREEN "[".$hostname."@".$project."]: ";
+		print BOLD GREEN "[".$project." @ ".$hostname."]: ";
 		print BOLD WHITE $message;
 	}
 	if ($status eq "warning") {
-		print BOLD GREEN "[".$hostname."@".$project."]: ";	
+		print BOLD GREEN "[".$project." @ ".$hostname."]: ";
 		print BOLD ORANGE $message;
 	}
 	if ($status eq "ko") {
-		print BOLD GREEN "[".$hostname."@".$project."]: ";
+		print BOLD GREEN "[".$project." @ ".$hostname."]: ";
 		print BOLD RED $message;
 	}
 }
@@ -394,7 +395,7 @@ sub mail_this {
 		return 0 if ($lines =~ /Already up to date/);
 	}
 
-	$message .= "\n\nCompléments d'informations :\n";
+	$message .= "\n\nMore informations :\n";
 
 	foreach my $compl (@$complement) {
 		$message .= $compl;
