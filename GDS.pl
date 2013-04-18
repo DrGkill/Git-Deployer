@@ -5,15 +5,16 @@
 # Script name : Git Deployer Server
 # Author : 	Guillaume Seigneuret
 # Date : 	16/01/12
+# Last update : 18/04/13
 # Type : 	Deamon
-# Version : 	1.2.1
+# Version : 	1.3
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
 # Usage : 	gds [-p pidfile] [-l logfile] [-d]
 # 		-d for daemonize
 #
-##   Copyright (C) 2012 Guillaume Seigneuret (Omega Cube)
+##   Copyright (C) 2012-2013 Guillaume Seigneuret (Omega Cube)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -34,6 +35,7 @@ use Config::Auto;
 use Data::Dumper;
 use Getopt::Std;
 use Proc::Daemon;
+use Term::ANSIColor qw(:constants);
 use lib qw(.);
 
 my %opts	= ();
@@ -42,12 +44,15 @@ my $ADDRESS 	= trim($config->{"engine-conf"}->{"listen"});
 my $PORT 	= trim($config->{"engine-conf"}->{"port"});
 my $PID_file	= trim($config->{"engine-conf"}->{"pidfile"});
 my $LOG_file	= trim($config->{"engine-conf"}->{"logfile"});
-my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
+my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});
+my $debug 	= 0;
+$debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 
 
 {
 	# Autoflush
 	$| = 1;
+	local $Term::ANSIColor::AUTORESET = 1;
 
 	# Get command line options
 	getopts('dl:p:', \%opts);
@@ -101,17 +106,19 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 			$SIG{CHLD} = undef;
 			 
 			print " Connection from: ".inet_ntoa($client->peeraddr)."\n";
-			print $client "***********************************************\r\n";
-                        print $client "**               Welcome to GDS              **\r\n";
-                        print $client "***********************************************\r\n";
-                        print $client "please make your request.\r\n";
-	  		
+			if($debug) {
+				print $client "***********************************************\r\n";
+                        	print $client "**               Welcome to GDS              **\r\n";
+                        	print $client "***********************************************\r\n";
+                        }
+			print $client BOLD GREEN "[$hostname]: please make your request.\r\n";
 
 	  		while(my $rep = <$client>) {
 			
 				printf "[%12s] Asked to interpret : %s", time, $rep;
 
 				if ( $rep =~ /^QUIT/i) {
+					print $client BOLD GREEN "[$hostname]:";				
 					print $client "Bye!\n";
 					close($client);
 					print "\n*** Fin de connexion sur PID $$ ***\n";
@@ -120,16 +127,28 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 					if($rep =~ /Project: .*\/([\w\-\.]+)\.git Branch: ([\w\-]+)/ 
 						or $rep =~ /Project: ([\w\-\.]+)\.git Branch: ([\w\-]+)/) 
 					{
-						print $client "Recognized Project : $1\r\n";
-						print $client "Recognized Branch : $2\r\n";
+						# Send the STDout to the client.
+						$standard_out = select($client);
+
+						if($debug) {
+							print "Recognized Project : $1\r\n";
+							print "Recognized Branch : $2\r\n";
+						}
+						print BOLD GREEN "[$hostname]:";
+						print BOLD WHITE "$1/$2\r\n";
 						$_PROJECT 	= $1;
 						$_BRANCH	= $2;
 
-						# Send the STDout to the client.
-						$standard_out = select($client);
 						# Launch git-deployer
-						print "No git deployer found :( Check your config file.\n" unless(-e $gitdeployer);
-						print "Launching Git Deployer...\n";
+						unless(-e $gitdeployer) {
+							print "No git deployer found :( Check your config file.\n";
+							# restore the stdout
+							select($standard_out);
+							close($client);
+						}
+						
+						print BOLD GREEN "[$hostname]:";
+						print BOLD WHITE "Launching Git Deployer...\n";
 						require "$gitdeployer";
 						
 						# restore the stdout
@@ -137,6 +156,7 @@ my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});;
 						close($client);
 					}
 					else {
+						print BOLD GREEN "[$hostname]:";
 						print $client "Query malformed.\r\n";
 						close($client);
 					}

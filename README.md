@@ -83,8 +83,9 @@ Begin lines by '#' to make comments
 ```
 $ mv git-deploy.config.sample GDS.config
 $ vim GDS.config
-# Config file sample for Git-Deployer v1.2.2
+# Config file sample for Git-Deployer v1.3
 [engine-conf]
+	hostname	= MyHostname
 	listen		= localhost
 	port		= 32337
 	pidfile		= /var/run/gds.pid
@@ -93,6 +94,7 @@ $ vim GDS.config
 	git 		= /usr/bin/git
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
+	debug_mode	= off
 	smtp		= smtp.example.com
 	smtp_from	= sender@example.com
 	### SMTP authentication and protocol : NONE|CLASSIC|TLS|SSL, default none

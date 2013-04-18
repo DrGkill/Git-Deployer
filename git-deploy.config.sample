@@ -1,5 +1,6 @@
-# Config file sample for Git-Deployer v1.2.1
+# Config file sample for Git-Deployer v1.3
 [engine-conf]
+	hostname	= MyHostname
 	listen		= localhost
 	port		= 32337
 	pidfile		= /var/run/gds.pid
@@ -8,6 +9,7 @@
 	git 		= /usr/bin/git
 	mysql 		= /usr/bin/mysql
 	error_file	= /tmp/git-deploy.err
+	debug_mode	= off
 	smtp		= smtp.example.com
 	smtp_from	= sender@example.com
 	### SMTP authentication and protocol : NONE|CLASSIC|TLS|SSL, default none
@@ -16,8 +18,7 @@
 	# smtp_user	= myusername
 	# smtp_pass	= mystrongpassword
 
-[git-deploy]
-	branch = master
+[git-deploy/master]
 	depth = 1  
 	git_project = git://github.com/DrGkill/Git-Deployer.git
 	# Can also work with SSH connection:
@@ -31,6 +32,9 @@
 	db_name = gitdeploy
 	db_user = gitdeploy
 	db_pass = gitdeploy_secret
+
+	WPscripts = off
+	SetPerm = off
 
 	sysuser = git
 
