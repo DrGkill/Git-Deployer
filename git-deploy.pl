@@ -107,7 +107,7 @@ if ($smtp->{Proto} ne "NONE"){
 	$smtp->{AuthPass}	= trim($config->{"engine-conf"}->{"smtp_pass"});
 }
 
-print BOLD RED "[$hostname]: Git is not installed !!!\n";
+print BOLD RED "[$hostname]: Git is not installed !!!\n" unless (-e $git);
 die("Git is not installed\n") unless (-e $git);
 print BOLD YELLOW "WARNING : No MySQL client.\n" unless (-e $mysql);
 
