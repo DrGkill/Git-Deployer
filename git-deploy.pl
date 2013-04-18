@@ -109,7 +109,7 @@ if ($smtp->{Proto} ne "NONE"){
 
 print BOLD RED "[$hostname]: Git is not installed !!!\n";
 die("Git is not installed\n") unless (-e $git);
-print BOLD ORANGE "WARNING : No MySQL client.\n" unless (-e $mysql);
+print BOLD YELLOW "WARNING : No MySQL client.\n" unless (-e $mysql);
 
 # Create a buffer for logging message during the script execution.
 my @buffer = ();
@@ -364,7 +364,7 @@ sub log_this {
 	}
 	if ($status eq "warning") {
 		print BOLD GREEN "[".$project." @ ".$hostname."]: ";
-		print BOLD ORANGE $message;
+		print BOLD YELLOW $message;
 	}
 	if ($status eq "ko") {
 		print BOLD GREEN "[".$project." @ ".$hostname."]: ";
