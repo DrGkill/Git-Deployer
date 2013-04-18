@@ -46,6 +46,7 @@ my $PID_file	= trim($config->{"engine-conf"}->{"pidfile"});
 my $LOG_file	= trim($config->{"engine-conf"}->{"logfile"});
 my $gitdeployer = trim($config->{"engine-conf"}->{"git-deployer"});
 my $debug 	= 0;
+my $hostname	= trim($config->{"engine-conf"}->{"hostname"});
 $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 
 
