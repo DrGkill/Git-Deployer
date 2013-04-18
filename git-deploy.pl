@@ -234,11 +234,11 @@ my @wp_files = ();
 			
 			foreach my $sql_file (@mysql_files) {
 				if (loaddb($db_host, $db_port, $db_name, $db_user, $db_pass, $sql_file) == 0) {
-					log_this(\@buffer,  "[$project] SQL file : $sql_file successfully loaded.\n",$project,"ok");
+					log_this(\@buffer,  "SQL file : $sql_file successfully loaded.\n",$project,"ok");
 					unlink($sql_file);
 				}
 				else {
-					log_this(\@buffer,  "[$project] ERROR : Was unable to load $sql_file.\n",$project,"ko");
+					log_this(\@buffer,  "ERROR : Was unable to load $sql_file.\n",$project,"ko");
 				}
 			}
 		}
@@ -270,7 +270,7 @@ my @wp_files = ();
 		log_this(\@buffer,  "Project successfully updated\n",$project,"ok");
 	}
 	else {
-		log_this(\@buffer,  "[$project] Was not able to load or update the project. See git details.\n",$project,"ko");
+		log_this(\@buffer,  "Was not able to load or update the project. See git details.\n",$project,"ko");
 	}
 
 	my @compl = read_file($errors_file);
