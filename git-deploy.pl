@@ -428,7 +428,7 @@ sub mail_this {
 		case "TLS"	{ 
 			my $mailer = new Net::SMTP::TLS( 
 				$smtp->{Host},
-				Hello   => $smtp->{sender},
+				Hello   => $smtp->{Sender},
 				Port    => $smtp->{Port},
 				User    => $smtp->{AuthUser},
 				Password=> $smtp->{AuthPass})
@@ -443,7 +443,7 @@ sub mail_this {
 		case "SSL"	{
 			my $mailer = new Net::SMTP::SSL(
 				$smtp->{Host},
-				Hello   => $smtp->{sender},
+				Hello   => $smtp->{Sender},
 				Port    => $smtp->{Port},
 				AuthUser=> $smtp->{AuthUser},
 				AuthPass=> $smtp->{AuthPass})
