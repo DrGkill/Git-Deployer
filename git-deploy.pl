@@ -277,9 +277,17 @@ my @wp_files = ();
 	}
 
 	my @compl = read_file($errors_file);
-	print "Sending report to $contact via ".$smtp->{Host}." for the project $project\n";
-	mail_this($smtp, $contact, "", "[Auto Deployment] $project on $hostname", \@buffer, \@compl);
-		
+
+	print "More informations: ";
+	foreach my $comp (@compl) {
+		print $comp;
+	}
+
+	if ($contact ne "") {
+		print "Sending report to $contact via ".$smtp->{Host}." for the project $project\n";
+		mail_this($smtp, $contact, "", "[Auto Deployment] $project on $hostname", \@buffer, \@compl);
+	}
+	
 	# Purge the error file
 	close (STDERR);
 	unlink($errors_file);
