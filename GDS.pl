@@ -7,7 +7,7 @@
 # Date : 	16/01/12
 # Last update : 18/04/13
 # Type : 	Deamon
-# Version : 	1.3
+# Version : 	1.3.14
 # Description : Receive hook trigger from Git and call the git deployer 
 # script
 #
