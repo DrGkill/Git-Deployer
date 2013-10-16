@@ -1,10 +1,10 @@
 Git-Auto-Deployer - A daemon for auto deploying projects with GIT
 =================================================================
 
-<p align="center">
+
 ![ScreenShot](https://raw.github.com/DrGkill/Git-Deployer/master/diagram.png)
 ![ScreenShot](https://raw.github.com/DrGkill/Git-Deployer/master/screenshot.png)
-</p>
+
 
 Table of Contents:
 ------------------
