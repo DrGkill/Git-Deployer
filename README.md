@@ -1,7 +1,7 @@
 Git-Auto-Deployer - A daemon for auto deploying projects with GIT
 =================================================================
 
-![ScreenShot](https://raw.github.com/DrGkill/Git-Deployer/master/diagram.png)
+-> ![ScreenShot](https://raw.github.com/DrGkill/Git-Deployer/master/diagram.png)<-
 ![ScreenShot](https://raw.github.com/DrGkill/Git-Deployer/master/screenshot.png)
 
 Table of Contents:
@@ -128,6 +128,24 @@ $ vim GDS.config
 
 [end]
 ```
+
+Launch the server by typing:
+
+```
+# service gds start
+Starting Git Deployment Server ... [STARTED]
+```
+
+The script provides you the ability to <code>stop</code>, <code>start</code> and <code>restart</code> the daemon.
+
+To finish you may want to make it start with your server :
+
+```
+# runlevel
+N2
+# cd /etc/rc.2/; ln -s ../init.d/gds S30gds
+```
+
 
 <a name="ss"></a>
 ### Special Scripts
