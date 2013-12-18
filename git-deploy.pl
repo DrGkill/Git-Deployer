@@ -161,14 +161,18 @@ my @wp_files = ();
 		die "Project path was not defined in the config file... Exiting\n";
 	}
 	
-	$EUID = (getpwnam($sysuser))[2];
-        $EGID = (getpwnam($sysuser))[3];
-	$UID = (getpwnam($sysuser))[2];
-        $GID = (getpwnam($sysuser))[3];
-	POSIX::setuid((getpwnam($sysuser))[2]);
-
-	$ENV{'HOME'}=(getpwnam($sysuser))[7];
-	use lib qw(.);
+	# If I'm root, then i'll be able to switch the user
+	# Else i'll not be able to, and maybe I don't need it.
+	if ( $UID == 0) {
+		$EUID = (getpwnam($sysuser))[2];
+	        $EGID = (getpwnam($sysuser))[3];
+		$UID = (getpwnam($sysuser))[2];
+	        $GID = (getpwnam($sysuser))[3];
+		POSIX::setuid((getpwnam($sysuser))[2]);
+	
+		$ENV{'HOME'}=(getpwnam($sysuser))[7];
+		use lib qw(.);
+	}
 
 	# init the mysql and perm file array
 	@mysql_files = ();
