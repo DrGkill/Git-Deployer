@@ -125,8 +125,7 @@ my @wp_files = ();
 	my $project = "";
 
 	# Initializing "project" variable via shell args.
-	$project = $ARGV[0]."/".$ARGV[1] if(defined trim($config->{$ARGV[0]}) 
-		and defined trim($config->{$ARGV[1]}));
+	$project = $ARGV[0]."/".$ARGV[1] if(defined trim($config->{$ARGV[0]."/".$ARGV[1]}) );	
 
 	# Initializing "project" variable via GDS.
 	if (defined $config->{"$_PROJECT/$_BRANCH"}
@@ -214,7 +213,7 @@ my @wp_files = ();
 		my $stash  = `$git stash`;
 
 		# Now, update the project.
-		my $status = `$git pull`;
+		my $status = `$git pull origin $branch`;
                 chomp($status);
                 if ($status eq "Already up-to-date."){
         	        log_this(\@buffer,  "Already up to date.\n",$project,"ok");
