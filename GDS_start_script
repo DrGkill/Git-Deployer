@@ -63,7 +63,7 @@ case "$1" in
 		echo -n "GDS process status ... "
 		result=`pgrep GDS`
 		GDS_process_status=$?
-		netstat -anpe  | grep -e $pattern_recog > /dev/null 2>&1
+		netstat -anpe  | grep -e $PATTERN_RECOG > /dev/null 2>&1
 		GDS_socket_status=$?
 
 		[ $GDS_process_status -eq 0 ] && echo "Process alive (PID: $result)"
