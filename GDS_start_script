@@ -46,7 +46,9 @@ case "$1" in
 		then
 			echo "[FAILED]" && exit 1
 		else
-			rm $GDS_PID && echo "[STOPPED]" && exit 0
+			rm -f $GDS_PID
+			echo "[STOPPED]"
+			exit 0
 		fi
 		;;
 	restart)
