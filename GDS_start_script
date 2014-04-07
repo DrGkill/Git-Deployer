@@ -19,6 +19,7 @@ GDS_HOME=/home/Git-Deployer
 GDS_BIN=$GDS_HOME/GDS.pl
 GDS_PID=/var/run/gds.pid
 PORT=32337
+PATTERN_RECOG="$PORT.*LISTEN.*perl"
 
 # GDS options
 #  -d, 		Daemon mode
@@ -28,6 +29,8 @@ PORT=32337
 [ ! -e "${GDS_BIN}" ] && echo "GDS ERROR - ${GDS_BIN} does not exist" && exit 1
 
 GDS_COMMAND="$GDS_BIN -d -p $GDS_PID"
+[ -e $GDS_PID ] && PID=`cat $GDS_PID`
+
 
 case "$1" in
 	start)
@@ -37,23 +40,29 @@ case "$1" in
 		;;
 	stop)
 		echo -n "Stoping Git Deployment Server ... "
-		kill `cat $GDS_PID`; rm $GDS_PID && echo "[STOPED]" && exit 0
-		echo "[FAILED]" && exit 1
+		[ ! -z $PID ] && echo "Could not retreive GDS PID :(" && exit 1
+		if [ kill $PID > /dev/null 2>&1 ]
+		then
+			rm $GDS_PID && echo "[STOPED]" && exit 0
+		else
+			echo "[FAILED]" && exit 1
+		fi
 		;;
 	restart)
 		echo "Restarting Git Deployment Server ... "
 		$0 stop
 		while [ $? -eq 0 ]
 		do
-			result=`netstat -anpe  | grep -E '$PORT.*perl'`
+			result=`netstat -anpe  | grep -E $PATTERN_RECOG`
 		done
 		$0 start
 		exit 0
 		;;
 	status)
 		echo -n "GDS status ... "
-		result=`netstat -anpe  | grep -E '$PORT.*LISTEN.*perl'`
+		result=`netstat -anpe  | grep -E $PATTERN_RECOG`
 		if [ $? -eq 0 ]
+		then
 			echo "[ OK ]"
 			exit 0
 		else
