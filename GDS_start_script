@@ -40,7 +40,7 @@ case "$1" in
 		;;
 	stop)
 		echo -n "Stoping Git Deployment Server ... "
-		[ ! -z $PID ] && echo "Could not retreive GDS PID :(" && exit 1
+		[ -z $PID ] && echo "Could not retreive GDS PID :(" && exit 1
 		if [ kill $PID > /dev/null 2>&1 ]
 		then
 			rm $GDS_PID && echo "[STOPED]" && exit 0
