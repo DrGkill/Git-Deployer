@@ -39,13 +39,14 @@ case "$1" in
 		echo "[FAILED]" && exit 1
 		;;
 	stop)
-		echo -n "Stoping Git Deployment Server ... "
+		echo -n "Stopping Git Deployment Server ... "
 		[ -z $PID ] && echo "Could not retreive GDS PID :(" && exit 1
-		if [ kill $PID > /dev/null 2>&1 ]
+		kill $PID
+		if ps -p $PID > /dev/null
 		then
-			rm $GDS_PID && echo "[STOPED]" && exit 0
-		else
 			echo "[FAILED]" && exit 1
+		else
+			rm $GDS_PID && echo "[STOPPED]" && exit 0
 		fi
 		;;
 	restart)
@@ -59,19 +60,21 @@ case "$1" in
 		exit 0
 		;;
 	status)
-		echo -n "GDS status ... "
-		result=`netstat -anpe  | grep -E $PATTERN_RECOG`
-		if [ $? -eq 0 ]
-		then
-			echo "[ OK ]"
-			exit 0
-		else
-			echo "[!!! KO !!!]"
-			exit 1
-		fi
+		echo -n "GDS process status ... "
+		result=`pgrep GDS`
+		GDS_process_status=$?
+		netstat -anpe  | grep -e $pattern_recog > /dev/null 2>&1
+		GDS_socket_status=$?
+
+		[ $GDS_process_status -eq 0 ] && echo "Process alive (PID: $result)"
+		[ $GDS_process_status -ne 0 ] && echo "No GDS process found :("
+		
+		echo -n "GDS socket status ... "
+		[ $GDS_socket_status -eq 0 ] && echo "Socket alive" && exit 0
+		[ $GDS_socket_status -ne 0 ] && echo "Socket not listening !!!" && exit 1
 		;;
 	*)
-		echo "GDS usage: $0 {start|stop|restart}"
+		echo "GDS usage: $0 {start|stop|restart|status}"
 		exit 1
 		;;
 esac
