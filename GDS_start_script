@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ### BEGIN INIT INFO
 # Provides:          gds
@@ -55,12 +55,14 @@ case "$1" in
 		echo -n "Restarting Git Deployment Server "
 		$0 stop
 		i=0
-		while [ $? -eq 0 ]
-		do
-			result=`netstat -anpe  | grep -E $PATTERN_RECOG`
-			$i+=1
-			[ $i -ge 50 ] && echo "Socket doesn't want to die !" && exit 1
-			echo -n "."
+		exitcode=1
+                while [ $exitcode -eq 0 ]
+                do
+                        result=`netstat -anpe  | grep -E $PATTERN_RECOG`
+                        exitcode=$?
+			i=`expr $i + 1`	
+			[ $i -ge 100 ] && echo "Socket doesn't want to die !" && exit 1
+			[ $(($i % 10)) -eq 0 ] && echo -n "."
 		done
 		echo ""
 		$0 start
