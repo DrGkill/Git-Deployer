@@ -123,6 +123,9 @@ $ vim GDS.config
 	db_user = gitdeploy
 	db_pass = gitdeploy_secret
 
+    git_user = gitdeploy
+    git_email = gitdeploy@example.com
+
 	WPscripts = off
 	SetPerm = off
 
