@@ -116,7 +116,7 @@ $default_protect_elf = lc(trim($default_protect_elf));
 $default_protect_elf = "on" if ($default_protect_elf =~ /1|on|true/);
 
 my @default_protect_ext = @{$config->{"engine-conf"}->{"protect_ext"}};
-@default_protect_ext = () unless defined @default_protect_ext;
+@default_protect_ext = () unless @default_protect_ext;
 
 my $default_ensure_readable = $config->{"engine-conf"}->{"ensure_readable"};
 $default_ensure_readable = 0 unless defined $default_ensure_readable;
@@ -184,7 +184,7 @@ my @wp_files = ();
     $protect_elf = ($protect_elf =~ /1|on|true/);
 
     my @protect_ext = @{$config->{$project}->{"protect_ext"}};
-    @protect_ext = @default_protect_ext unless defined @protect_ext;
+    @protect_ext = @default_protect_ext unless @protect_ext;
 
     my $ensure_readable = $config->{$project}->{"ensure_readable"};
     $ensure_readable = $default_ensure_readable unless defined $ensure_readable;
@@ -322,18 +322,21 @@ my @wp_files = ();
 			}
 		}
 
+        my $perm_file_found = 0;
 		if ( $config->{$project}->{"SetPerm"} eq "on") {
 			# Set the file permissions :
 			log_this(\@buffer,  "		Searching for permission map file...");
 			find({wanted => \&PERMfile, untaint => 1}, "$local_path");
 			log_this(\@buffer,  "No permission script found\n",$project,"ko") if (scalar(@perm_files) == 0);	
 
+            $perm_file_found = (scalar(@perm_files) > 0)
 			foreach my $perm_file (@perm_files) {
 				set_perm("$local_path/$project", $perm_file);
 				unlink($perm_file);
 			}
 		}
-        else {
+        
+        if($perm_file_found) {
             find({wanted => sub {
                     qx{chmod o-w,o-x "$local_path/$_"} if should_be_protected("$local_path/$_", $protect_elf, @protect_ext);
                 }, untaint => 1},
