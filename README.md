@@ -111,7 +111,7 @@ $ vim GDS.config
     #this can be overriden for each deploy section
     #those right management are not compatible with SetPerm
     protect_elf = on
-    protect_ext = "php", "rb"
+    protect_ext = php, rb
     ensure_readable = on
     webserver_user = www-data
     

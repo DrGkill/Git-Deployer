@@ -75,6 +75,8 @@ use Net::SMTP::SSL;
 use Term::ANSIColor qw(:constants);
 use IO::Handle;
 
+use Carp::Always;
+
 $| = 1;
 
 our $_PROJECT;
@@ -115,8 +117,9 @@ $default_protect_elf = 0 unless defined $default_protect_elf;
 $default_protect_elf = lc(trim($default_protect_elf));
 $default_protect_elf = "on" if ($default_protect_elf =~ /1|on|true/);
 
-my @default_protect_ext = @{$config->{"engine-conf"}->{"protect_ext"}};
-@default_protect_ext = () unless @default_protect_ext;
+my $default_protect_ext_str = $config->{"engine-conf"}->{"protect_ext"};
+my @default_protect_ext = ();
+@default_protect_ext = map({ trim($_) } split(/,/, $default_protect_ext_str)) if $default_protect_ext_str;
 
 my $default_ensure_readable = $config->{"engine-conf"}->{"ensure_readable"};
 $default_ensure_readable = 0 unless defined $default_ensure_readable;
@@ -144,7 +147,7 @@ my @wp_files = ();
 	my $project = "";
 
 	# Initializing "project" variable via shell args.
-	$project = $ARGV[0]."/".$ARGV[1] if(defined trim($config->{$ARGV[0]."/".$ARGV[1]}) );	
+	$project = $ARGV[0]."/".$ARGV[1] if(defined $ARGV[0] and defined $ARGV[1] and defined trim($config->{$ARGV[0]."/".$ARGV[1]}) );	
 
 	# Initializing "project" variable via GDS.
 	if (defined $config->{"$_PROJECT/$_BRANCH"}
@@ -183,8 +186,9 @@ my @wp_files = ();
     $protect_elf = lc(trim($protect_elf));
     $protect_elf = ($protect_elf =~ /1|on|true/);
 
-    my @protect_ext = @{$config->{$project}->{"protect_ext"}};
-    @protect_ext = @default_protect_ext unless @protect_ext;
+    my $protect_ext_str = $config->{$project}->{"protect_ext"};
+    my @protect_ext = @default_protect_ext;
+    @protect_ext = map({ trim($_) } split(/,/, $protect_ext_str)) if $protect_ext_str;
 
     my $ensure_readable = $config->{$project}->{"ensure_readable"};
     $ensure_readable = $default_ensure_readable unless defined $ensure_readable;
@@ -235,26 +239,26 @@ my @wp_files = ();
         # Is the project is git initted ?
 	my $project_status;
     log_this(\@buffer,  "No project directory yet\n",$project,"warning") if (!opendir(DIR, "$local_path/.git"));
-        if (!readdir DIR){
+    if((not -e "$local_path/.git") or (not -d "$local_path/.git") or (!readdir DIR)){
         # No ! I create it.
         my $git_init_cmd = "$git clone --depth=$depth -b $branch $git_url $local_path";
 
         log_this(\@buffer,  "Project doesn't exists, creating it...\n",$project,"warning");
         chdir "$local_path";
         # TODO ADD DEBUG MODE
-        log_this(\@buffer,  "		cd $local_path\n");
-        log_this(\@buffer,  "		$git_init_cmd\n");
+        log_this(\@buffer,  "		cd $local_path\n",$project,"ok");
+        log_this(\@buffer,  "		$git_init_cmd\n",$project,"ok");
 
         $project_status = system($git_init_cmd);
 
         if($project_status == 0) {
             if($git_user) {
                 my $git_user_cmd = "$git config user.name \"$git_user\"";
-                system($git_user_cmd) == 0 and log_this(\@buffer,  "		$git_user_cmd\n");
+                system($git_user_cmd) == 0 and log_this(\@buffer,  "		$git_user_cmd\n",$project,"ok");
             }
             if($git_email) {
                 my $git_email_cmd = "$git config user.name \"$git_email\"";
-                system($git_email_cmd) == 0 and log_this(\@buffer,  "		$git_email_cmd\n");
+                system($git_email_cmd) == 0 and log_this(\@buffer,  "		$git_email_cmd\n",$project,"ok");
             }
         }
     }
@@ -329,7 +333,7 @@ my @wp_files = ();
 			find({wanted => \&PERMfile, untaint => 1}, "$local_path");
 			log_this(\@buffer,  "No permission script found\n",$project,"ko") if (scalar(@perm_files) == 0);	
 
-            $perm_file_found = (scalar(@perm_files) > 0)
+            $perm_file_found = (scalar(@perm_files) > 0);
 			foreach my $perm_file (@perm_files) {
 				set_perm("$local_path/$project", $perm_file);
 				unlink($perm_file);
@@ -542,9 +546,11 @@ sub set_perm {
 
 sub log_this {
 	my ($buffer, $message, $project, $status) = @_;
+
 	push(@$buffer, $message);
 
-	my $decorator = "[".$project." @ ".$hostname."]: " if $project ne "";
+	my $decorator = "";
+    $decorator = "[".$project." @ ".$hostname."]: " if $project ne "";
 
 	if ($status eq "ok") {
 		print BOLD GREEN $decorator;
@@ -558,17 +564,6 @@ sub log_this {
 		print BOLD GREEN $decorator;
 		print BOLD RED $message;
 	}
-}
-
-sub trim
-{
-    my @out = @_;
-    for (@out)
-    {
-        s/^\s+//;
-        s/\s+$//;
-    }
-    return wantarray ? @out : $out[0];
 }
 
 sub mail_this {
