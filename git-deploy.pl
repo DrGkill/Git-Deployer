@@ -75,8 +75,6 @@ use Net::SMTP::SSL;
 use Term::ANSIColor qw(:constants);
 use IO::Handle;
 
-use Carp::Always;
-
 $| = 1;
 
 our $_PROJECT;
@@ -546,11 +544,10 @@ sub set_perm {
 
 sub log_this {
 	my ($buffer, $message, $project, $status) = @_;
-
 	push(@$buffer, $message);
 
 	my $decorator = "";
-    $decorator = "[".$project." @ ".$hostname."]: " if $project ne "";
+	$decorator = "[".$project." @ ".$hostname."]: " if $project ne "";
 
 	if ($status eq "ok") {
 		print BOLD GREEN $decorator;
