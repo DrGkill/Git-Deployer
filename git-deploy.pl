@@ -61,6 +61,8 @@
 #       [DONE] Run the script with unprivileged user (change with the config)
 
 use strict;
+use warnings;
+
 use Switch;
 use Config::Auto;
 use MIME::Lite;
@@ -71,6 +73,7 @@ use Data::Dumper;
 use Net::SMTP::TLS;
 use Net::SMTP::SSL;
 use Term::ANSIColor qw(:constants);
+use IO::Handle;
 
 $| = 1;
 
@@ -106,6 +109,22 @@ if ($smtp->{Proto} ne "NONE"){
 	$smtp->{AuthUser} 	= trim($config->{"engine-conf"}->{"smtp_user"});
 	$smtp->{AuthPass}	= trim($config->{"engine-conf"}->{"smtp_pass"});
 }
+
+my $default_protect_elf = $config->{"engine-conf"}->{"protect_elf"};
+$default_protect_elf = 0 unless defined $default_protect_elf;
+$default_protect_elf = lc(trim($default_protect_elf));
+$default_protect_elf = "on" if ($default_protect_elf =~ /1|on|true/);
+
+my @default_protect_ext = @{$config->{"engine-conf"}->{"protect_ext"}};
+@default_protect_ext = () unless defined @default_protect_ext;
+
+my $default_ensure_readable = $config->{"engine-conf"}->{"ensure_readable"};
+$default_ensure_readable = 0 unless defined $default_ensure_readable;
+$default_ensure_readable = lc(trim($default_ensure_readable));
+$default_ensure_readable = "on" if ($default_ensure_readable =~ /1|on|true/);
+
+my $default_webserver_user = $config->{"engine-conf"}->{"webserver_user"};
+$default_webserver_user = trim($default_webserver_user) if defined $default_webserver_user;
 
 print BOLD RED "[$hostname]: Git is not installed !!!\n" unless (-e $git);
 die("Git is not installed\n") unless (-e $git);
@@ -157,6 +176,25 @@ my @wp_files = ();
     my $git_email = trim($config->{$project}->{"git_email"});
 
 	my $sysuser	= trim($config->{$project}->{"sysuser"});
+
+    my $protect_elf = $config->{$project}->{"protect_elf"};
+    $protect_elf = $default_protect_elf unless defined $protect_elf;
+    $protect_elf = 0 unless defined $protect_elf;
+    $protect_elf = lc(trim($protect_elf));
+    $protect_elf = ($protect_elf =~ /1|on|true/);
+
+    my @protect_ext = @{$config->{$project}->{"protect_ext"}};
+    @protect_ext = @default_protect_ext unless defined @protect_ext;
+
+    my $ensure_readable = $config->{$project}->{"ensure_readable"};
+    $ensure_readable = $default_ensure_readable unless defined $ensure_readable;
+    $ensure_readable = 0 unless defined $ensure_readable;
+    $ensure_readable = lc(trim($default_ensure_readable));
+    $ensure_readable = ($default_ensure_readable =~ /1|on|true/);
+
+    my $webserver_user = $config->{$project}->{"webserver_user"};
+    $webserver_user = $default_webserver_user unless defined $webserver_user;
+    $webserver_user = trim($webserver_user) if defined $webserver_user;
 
 	if ($local_path eq ""){
 		print BOLD GREEN "[$hostname]: ";
@@ -289,13 +327,35 @@ my @wp_files = ();
 			log_this(\@buffer,  "		Searching for permission map file...");
 			find({wanted => \&PERMfile, untaint => 1}, "$local_path");
 			log_this(\@buffer,  "No permission script found\n",$project,"ko") if (scalar(@perm_files) == 0);	
-	
+
 			foreach my $perm_file (@perm_files) {
 				set_perm("$local_path/$project", $perm_file);
 				unlink($perm_file);
 			}
 		}
-
+        else {
+            find({wanted => sub {
+                    qx{chmod o-w,o-x "$local_path/$_"} if should_be_protected("$local_path/$_", $protect_elf, @protect_ext);
+                }, untaint => 1},
+                $local_path);
+                
+            if($webserver_user){
+                my @writable = get_writable($webserver_user, $local_path);
+                for my $file (@writable) {
+                    qx{chmod g-w, g-x "$file"} if should_be_protected($file, $protect_elf, @protect_ext);
+                }
+            }
+            
+            if($ensure_readable) {
+                qx{chmod -R ug+X "$local_path"};
+                if($webserver_user){
+                    my @unreadable = get_unreadable($local_path);
+                    for my $file (@unreadable) {
+                        qx{chmod g+r "$file"};
+                    }
+                }                
+            }
+        }
 		log_this(\@buffer,  "Project successfully updated\n",$project,"ok");
 	}
 	else {
@@ -346,6 +406,90 @@ sub WPfile {
                 log_this(\@buffer,  "\n		Found wordpress script : $file\n","","ok");
 		push(@wp_files, $file);
         }
+}
+
+sub get_writable {
+    my $user = shift;
+    my $folder = shift;
+
+    pipe(READER, WRITER);
+    WRITER->autoflush(1);
+    my $child_pid = fork();
+
+    if(($child_pid < 0) or not defined($child_pid)){
+        die "unable to fork: ".$!;
+    }
+    
+    if($child_pid) {
+        close WRITER;
+        my @files = <READER>;
+        close READER;
+        waitpid($child_pid, 0);
+        return @files;
+    }
+    else {
+        close READER;
+        $EUID = getpwuid($user);
+        $EGID = getgrnam($user);
+        
+        my @writable_files = ();
+        find(sub { push(@writable_files, $_) if -w $_; }, $folder);
+
+        for my $file (@writable_files) {
+            print WRITER "$folder/$file\n";
+        }        
+        close WRITER;
+        exit 0;
+    }
+}
+
+sub get_unreadable {
+    my $user = shift;
+    my $folder = shift;
+
+    pipe(READER, WRITER);
+    WRITER->autoflush(1);
+    my $child_pid = fork();
+
+    if(($child_pid < 0) or not defined($child_pid)){
+        die "unable to fork: ".$!;
+    }
+    
+    if($child_pid) {
+        close WRITER;
+        my @files = <READER>;
+        close READER;
+        waitpid($child_pid, 0);
+        return @files;
+    }
+    else {
+        close READER;
+        $EUID = getpwuid($user);
+        $EGID = getgrnam($user);
+        
+        my @unreadable_files = ();
+        find(sub { push(@unreadable_files, $_) unless -x $_; }, $folder);
+
+        for my $file (@unreadable_files) {
+            print WRITER "$folder/$file\n";
+        }        
+        close WRITER;
+        exit 0;
+    }
+}
+
+sub should_be_protected {
+    my $file = shift;
+    my $protect_elf = shift;
+    my @protect_ext = @_;
+
+    if($protect_elf and qx(file "$file") =~ /executable/) {
+        return 1;
+    }
+    for my $ext (@protect_ext) {
+        return 1 if($file =~ /\.\Q$ext\E$/);
+    }
+    return 0;
 }
 
 sub loaddb {

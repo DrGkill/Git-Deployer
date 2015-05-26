@@ -108,6 +108,14 @@ $ vim GDS.config
 	# smtp_user	= myusername
 	# smtp_pass	= mystrongpassword
 
+    #this can be overriden for each deploy section
+    #those right management are not compatible with SetPerm
+    protect_elf = on
+    protect_ext = "php", "rb"
+    ensure_readable = on
+    webserver_user = www-data
+    
+
 [git-deploy/master]
 	depth = 1  
 	git_project = git://github.com/DrGkill/Git-Deployer.git
@@ -130,6 +138,10 @@ $ vim GDS.config
 	SetPerm = off
 
 	sysuser = git
+
+    #example of override
+    webserver_user = apache
+    
 
 [end]
 ```
