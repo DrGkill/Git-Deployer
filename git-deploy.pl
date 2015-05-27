@@ -74,6 +74,11 @@ use Net::SMTP::TLS;
 use Net::SMTP::SSL;
 use Term::ANSIColor qw(:constants);
 use IO::Handle;
+use File::LibMagic;
+
+use Carp::Always;
+
+my @IGNORED_FILES = ('/\.git$', '/\.git/', '/\.$', '/\.\.$');
 
 $| = 1;
 
@@ -126,6 +131,8 @@ $default_ensure_readable = "on" if ($default_ensure_readable =~ /1|on|true/);
 
 my $default_webserver_user = $config->{"engine-conf"}->{"webserver_user"};
 $default_webserver_user = trim($default_webserver_user) if defined $default_webserver_user;
+
+my $magic = File::LibMagic->new();
 
 print BOLD RED "[$hostname]: Git is not installed !!!\n" unless (-e $git);
 die("Git is not installed\n") unless (-e $git);
@@ -207,12 +214,14 @@ my @wp_files = ();
 	# If I'm root, then i'll be able to switch the user
 	# Else i'll not be able to, and maybe I don't need it.
 	if ( $UID == 0) {
-        $EUID = (getpwnam($sysuser))[2];
         $EGID = (getpwnam($sysuser))[3];
-        $UID = (getpwnam($sysuser))[2];
         $GID = (getpwnam($sysuser))[3];
-        POSIX::setuid((getpwnam($sysuser))[2]);
+        POSIX::setgid((getpwnam($sysuser))[3]);
 
+        $EUID = (getpwnam($sysuser))[2];
+        $UID = (getpwnam($sysuser))[2];
+        POSIX::setuid((getpwnam($sysuser))[2]);
+        
         $ENV{'HOME'}=(getpwnam($sysuser))[7];
         use lib qw(.);
 	}
@@ -338,27 +347,53 @@ my @wp_files = ();
 			}
 		}
         
-        if($perm_file_found) {
-            find({wanted => sub {
-                    qx{chmod o-w,o-x "$local_path/$_"} if should_be_protected("$local_path/$_", $protect_elf, @protect_ext);
-                }, untaint => 1},
-                $local_path);
-                
-            if($webserver_user){
-                my @writable = get_writable($webserver_user, $local_path);
-                for my $file (@writable) {
-                    qx{chmod g-w, g-x "$file"} if should_be_protected($file, $protect_elf, @protect_ext);
-                }
-            }
-            
+        if(!$perm_file_found) {
+            my @group_ids;
+            @group_ids = get_group_ids($webserver_user) if $webserver_user;
             if($ensure_readable) {
-                qx{chmod -R ug+X "$local_path"};
+                qx{/bin/chmod -R ug+X "$local_path"};
+                qx{/bin/chmod -R u+r "$local_path"};
                 if($webserver_user){
-                    my @unreadable = get_unreadable($local_path);
+                    my @unreadable = get_unreadable($local_path, @group_ids);
                     for my $file (@unreadable) {
-                        qx{chmod g+r "$file"};
+                        qx{/bin/chmod g+r "$file"};
+                        log_this(\@buffer,  "Add group read permission on $file\n",$project,"ok");
+                    }
+                    @unreadable = get_unreadable($local_path, @group_ids);
+                    for my $file (@unreadable) {
+                        qx{/bin/chmod o+r "$file"};
+                        qx{/bin/chmod o+x "$file"} if -d $file;
+                        log_this(\@buffer,  "Add group read permission on $file\n",$project,"ok");
                     }
                 }                
+            }
+
+            find({wanted => sub {
+                    my $file = $File::Find::name;
+                    for my $pattern (@IGNORED_FILES) {
+                        return if $file =~ /$pattern/;
+                    }
+                    if(should_be_protected($file, $protect_elf, @protect_ext)) {
+                        if(-d $file){
+                            qx{/bin/chmod o-w "$file"};
+                            log_this(\@buffer,  "protecting folder $file\n",$project,"ok");
+                        }
+                        else {
+                            qx{/bin/chmod o-wx "$file"};
+                            log_this(\@buffer,  "protecting file $file\n",$project,"ok");
+                        }
+                    }                    
+                }, untaint => 1},
+                $local_path);
+
+            if($webserver_user){
+                my @writable = get_writable($local_path, @group_ids);
+                for my $file (@writable) {
+                    if(should_be_protected($file, $protect_elf, @protect_ext)) {
+                        qx{/bin/chmod g-w "$file"};
+                        log_this(\@buffer,  "Remove group rights on $file\n",$project,"ok");
+                    }
+                }
             }
         }
 		log_this(\@buffer,  "Project successfully updated\n",$project,"ok");
@@ -413,74 +448,88 @@ sub WPfile {
         }
 }
 
-sub get_writable {
+sub get_group_ids {
     my $user = shift;
-    my $folder = shift;
 
-    pipe(READER, WRITER);
-    WRITER->autoflush(1);
-    my $child_pid = fork();
-
-    if(($child_pid < 0) or not defined($child_pid)){
-        die "unable to fork: ".$!;
-    }
-    
-    if($child_pid) {
-        close WRITER;
-        my @files = <READER>;
-        close READER;
-        waitpid($child_pid, 0);
-        return @files;
+    my $user_id;
+    my $user_name;
+    if($user =~ /^\d+$/) {
+        $user_id = $user;
+        $user_name = getpwuid($user);
     }
     else {
-        close READER;
-        $EUID = getpwuid($user);
-        $EGID = getgrnam($user);
-        
-        my @writable_files = ();
-        find(sub { push(@writable_files, $_) if -w $_; }, $folder);
-
-        for my $file (@writable_files) {
-            print WRITER "$folder/$file\n";
-        }        
-        close WRITER;
-        exit 0;
+        $user_id = getpwnam($user);
+        $user_name = $user;
     }
+
+    my $main_gid;
+    my @groups = ();
+
+    while (my ($name, $pass, $uid, $gid, $quota, $comment, $gcos, $dir, $shell, $expire) = getpwent()) {
+        if(($name eq $user_name) and ($uid == $user_id)) {
+            $main_gid = $gid;
+        }
+    }
+
+    while (my ($name, $passwd, $gid, $members) = getgrent()) {
+        if(defined($main_gid) && ($gid == $main_gid)){
+            push(@groups, $gid);
+            next;
+        }
+        next unless $members;
+        my @memberlist = map({ trim($_) } split(/\s+/, $members));
+        if(@memberlist and grep(/^\Q$user_name\E$/, @memberlist)) {
+            push(@groups, $gid);
+        }
+    }
+    return @groups;
+}
+
+sub get_writable {
+    my $folder = shift;
+    my @groups = @_;
+
+    my @writable_files = ();
+    find({wanted => sub {
+            my $file = $File::Find::name;
+            for my $pattern (@IGNORED_FILES) {
+                return if $file =~ /$pattern/;
+            }
+            my @file_stats = stat($File::Find::name);
+            my $group_id = $file_stats[5];
+            my $mode = $file_stats[2];
+            push(@writable_files, $file) if ($mode & POSIX::S_IWGRP) and grep(/^\Q$group_id\E$/, @groups);
+        }, untaint => 1},
+        $folder);
+
+    return @writable_files;
 }
 
 sub get_unreadable {
-    my $user = shift;
     my $folder = shift;
+    my @groups = @_;
 
-    pipe(READER, WRITER);
-    WRITER->autoflush(1);
-    my $child_pid = fork();
+    my @unreadable_files = ();
+    find({wanted => sub {
+            my $file = $File::Find::name;
+            for my $pattern (@IGNORED_FILES) {
+                return if $file =~ /$pattern/;
+            }   
+            
+            my @file_stats = stat($File::Find::name);
+            my $group_id = $file_stats[5];
+            my $mode = $file_stats[2];
+            my $readable = ($mode & POSIX::S_IROTH);
+            $readable = ($mode & POSIX::S_IRGRP) and grep(/^\Q$group_id\E$/, @groups) unless $readable;
+            if((-d $file) and ($readable)){
+                $readable = ($mode & POSIX::S_IXOTH);
+                $readable = ($mode & POSIX::S_IXGRP) and grep(/^\Q$group_id\E$/, @groups) unless $readable;
+            }
+            push(@unreadable_files, $file) unless $readable;
+        }, untaint => 1},
+        $folder);
 
-    if(($child_pid < 0) or not defined($child_pid)){
-        die "unable to fork: ".$!;
-    }
-    
-    if($child_pid) {
-        close WRITER;
-        my @files = <READER>;
-        close READER;
-        waitpid($child_pid, 0);
-        return @files;
-    }
-    else {
-        close READER;
-        $EUID = getpwuid($user);
-        $EGID = getgrnam($user);
-        
-        my @unreadable_files = ();
-        find(sub { push(@unreadable_files, $_) unless -x $_; }, $folder);
-
-        for my $file (@unreadable_files) {
-            print WRITER "$folder/$file\n";
-        }        
-        close WRITER;
-        exit 0;
-    }
+    return @unreadable_files;
 }
 
 sub should_be_protected {
@@ -488,11 +537,11 @@ sub should_be_protected {
     my $protect_elf = shift;
     my @protect_ext = @_;
 
-    if($protect_elf and qx(file "$file") =~ /executable/) {
+    if($protect_elf and $magic->info_from_filename($file)->{description} =~ /executable/) {
         return 1;
     }
     for my $ext (@protect_ext) {
-        return 1 if($file =~ /\.\Q$ext\E$/);
+        return 1 if $file =~ /\.\Q$ext\E$/;
     }
     return 0;
 }
