@@ -76,8 +76,6 @@ use Term::ANSIColor qw(:constants);
 use IO::Handle;
 use File::LibMagic;
 
-use Carp::Always;
-
 my @IGNORED_FILES = ('/\.git$', '/\.git/', '/\.$', '/\.\.$');
 
 $| = 1;
@@ -85,6 +83,12 @@ $| = 1;
 our $_PROJECT;
 our $_BRANCH;
 local $Term::ANSIColor::AUTORESET = 1;
+
+my $_log_progress__previous_display = undef;
+my $_log_progress__wheel_status = 0;
+my $_log_progress__wheel_chars = "-\\|/";
+
+my $OUTHANDLER;
 
 my $config = Config::Auto::parse();
         #print Dumper($config);
@@ -148,7 +152,7 @@ my @wp_files = ();
 {
 	# Redirect STDERR to a buffer.
 	open (STDERR,">$errors_file");
-
+    $OUTHANDLER = select;
 	my $project = "";
 
 	# Initializing "project" variable via shell args.
@@ -346,10 +350,11 @@ my @wp_files = ();
 				unlink($perm_file);
 			}
 		}
-        
+
         if(!$perm_file_found) {
             my @group_ids;
             @group_ids = get_group_ids($webserver_user) if $webserver_user;
+            
             if($ensure_readable) {
                 qx{/bin/chmod -R ug+X "$local_path"};
                 qx{/bin/chmod -R u+r "$local_path"};
@@ -357,13 +362,13 @@ my @wp_files = ();
                     my @unreadable = get_unreadable($local_path, @group_ids);
                     for my $file (@unreadable) {
                         qx{/bin/chmod g+r "$file"};
-                        log_this(\@buffer,  "Add group read permission on $file\n",$project,"ok");
+                        log_progress(\@buffer, "Ensure readability", "Add group read permission on $file\n",$project,"ok");
                     }
                     @unreadable = get_unreadable($local_path, @group_ids);
                     for my $file (@unreadable) {
                         qx{/bin/chmod o+r "$file"};
                         qx{/bin/chmod o+x "$file"} if -d $file;
-                        log_this(\@buffer,  "Add group read permission on $file\n",$project,"ok");
+                        log_progress(\@buffer, "Ensure readability", "Add guest read permission on $file\n",$project,"ok");
                     }
                 }                
             }
@@ -376,11 +381,11 @@ my @wp_files = ();
                     if(should_be_protected($file, $protect_elf, @protect_ext)) {
                         if(-d $file){
                             qx{/bin/chmod o-w "$file"};
-                            log_this(\@buffer,  "protecting folder $file\n",$project,"ok");
+                            log_progress(\@buffer, "Protecting files", "Remove guest write permissions on folder $file\n",$project,"ok");
                         }
                         else {
                             qx{/bin/chmod o-wx "$file"};
-                            log_this(\@buffer,  "protecting file $file\n",$project,"ok");
+                            log_progress(\@buffer, "Protecting files", "Remove guest write and execute permissions on file $file\n",$project,"ok");
                         }
                     }                    
                 }, untaint => 1},
@@ -391,7 +396,7 @@ my @wp_files = ();
                 for my $file (@writable) {
                     if(should_be_protected($file, $protect_elf, @protect_ext)) {
                         qx{/bin/chmod g-w "$file"};
-                        log_this(\@buffer,  "Remove group rights on $file\n",$project,"ok");
+                        log_progress(\@buffer, "protecting files", "Remove group write permissions on $file\n",$project,"ok");
                     }
                 }
             }
@@ -495,9 +500,9 @@ sub get_writable {
             for my $pattern (@IGNORED_FILES) {
                 return if $file =~ /$pattern/;
             }
-            my @file_stats = stat($File::Find::name);
+            my @file_stats = stat($file);
             my $group_id = $file_stats[5];
-            my $mode = $file_stats[2];
+            my $mode = ($file_stats[2]+0) & 07777;
             push(@writable_files, $file) if ($mode & POSIX::S_IWGRP) and grep(/^\Q$group_id\E$/, @groups);
         }, untaint => 1},
         $folder);
@@ -516,14 +521,14 @@ sub get_unreadable {
                 return if $file =~ /$pattern/;
             }   
             
-            my @file_stats = stat($File::Find::name);
+            my @file_stats = stat($file);
             my $group_id = $file_stats[5];
-            my $mode = $file_stats[2];
+            my $mode = ($file_stats[2]+0) & 07777 ;
             my $readable = ($mode & POSIX::S_IROTH);
-            $readable = ($mode & POSIX::S_IRGRP) and grep(/^\Q$group_id\E$/, @groups) unless $readable;
+            $readable = 1 if ($mode & POSIX::S_IRGRP) and grep(/^\Q$group_id\E$/, @groups) and not $readable;
             if((-d $file) and ($readable)){
                 $readable = ($mode & POSIX::S_IXOTH);
-                $readable = ($mode & POSIX::S_IXGRP) and grep(/^\Q$group_id\E$/, @groups) unless $readable;
+                $readable = 1 if ($mode & POSIX::S_IXGRP) and grep(/^\Q$group_id\E$/, @groups) and not $readable;
             }
             push(@unreadable_files, $file) unless $readable;
         }, untaint => 1},
@@ -591,10 +596,42 @@ sub set_perm {
 	#unlink($perm_file);
 }
 
+
+sub log_progress {
+    my ($buffer, $display, $message, $project, $status) = @_;
+    push(@$buffer, $message);
+
+    if(defined($_log_progress__previous_display) and $display eq $_log_progress__previous_display) {
+        $_log_progress__wheel_status = ($_log_progress__wheel_status +1 ) % 4;
+        print "\b";
+        print substr($_log_progress__wheel_chars, $_log_progress__wheel_status, 1);
+        print "\n" if $OUTHANDLER ne \*STDOUT;
+        $OUTHANDLER->flush();
+    }
+    else {
+        print "\n" if defined($_log_progress__previous_display);
+        $_log_progress__previous_display = $display;
+        $_log_progress__wheel_status = 0;
+        dislay_msg($display." ", $project, $status);
+        print substr($_log_progress__wheel_chars, $_log_progress__wheel_status, 1);
+        $OUTHANDLER->flush();
+    }
+}
+
 sub log_this {
 	my ($buffer, $message, $project, $status) = @_;
 	push(@$buffer, $message);
 
+    if(defined($_log_progress__previous_display)) {
+        $_log_progress__previous_display = undef;
+        print "\n";
+    }
+    dislay_msg($message, $project, $status);
+}
+
+sub dislay_msg {
+    my ($message, $project, $status) = @_;
+    
 	my $decorator = "";
 	$decorator = "[".$project." @ ".$hostname."]: " if $project ne "";
 
@@ -613,7 +650,7 @@ sub log_this {
 }
 
 sub mail_this {
-        my ($smtp, $recipient, $cc, $title, $body, $complement) = @_;
+    my ($smtp, $recipient, $cc, $title, $body, $complement) = @_;
 
 	my $message = "";
 
