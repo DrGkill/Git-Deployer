@@ -35,6 +35,7 @@ The project needs sevral Perl plugins to work properly:
 * Proc::Daemon
 * Net::SMTP::TLS
 * Net::SMTP::SSL
+* File::LibMagic
 
 To install them : 
 
@@ -47,12 +48,14 @@ $ perl -MCPAN -e shell
 > install Proc::Daemon
 > install Net::SMTP::TLS
 > install Net::SMTP::SSL
+> install File::LibMagic
 ```
 
 or for Debian :
 
 ```
-$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl libnet-smtp-tls-perl libnet-smtp-ssl-perl
+$ apt-get install libmime-lite-perl libconfig-auto-perl libfile-finder-perl libproc-daemon-perl libnet-smtp-tls-perl libnet-smtp-ssl-perl libmagic-dev cpanm
+$ cpanm File::LibMagic
 ```
 
 Clone the project into your favorite directory :
