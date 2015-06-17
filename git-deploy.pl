@@ -748,6 +748,7 @@ sub trim
     my @out = @_;
     for (@out)
     {
+		next if not defined $_;
         s/^\s+//;
         s/\s+$//;
     }
