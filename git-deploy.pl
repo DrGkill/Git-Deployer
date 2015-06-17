@@ -742,3 +742,14 @@ sub read_file {
 
         return @lines;
 }
+
+sub trim
+{
+    my @out = @_;
+    for (@out)
+    {
+        s/^\s+//;
+        s/\s+$//;
+    }
+    return wantarray ? @out : $out[0];
+}
