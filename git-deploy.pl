@@ -172,8 +172,8 @@ my @wp_files = ();
 
 	if ($project eq ""){
 		print BOLD GREEN "[$hostname]: ";
-		print BOLD RED "Unable te deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n.";
-		die "Unable te deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n.";
+		print BOLD RED "Unable to deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n. Hint : ./git-deploy project-name branch\n";
+		die "Unable to deploy anything because the project was not passed in argument OR not defined in the deployer server config file\n.";
 	}
 
 	# Loading the project settings
