@@ -136,6 +136,12 @@ $default_ensure_readable = "on" if ($default_ensure_readable =~ /1|on|true/);
 my $default_webserver_user = $config->{"engine-conf"}->{"webserver_user"};
 $default_webserver_user = trim($default_webserver_user) if defined $default_webserver_user;
 
+my $default_wpscript = $config->{"engine-conf"}->{"WPscripts"};
+$default_wpscript = trim($default_webserver_user) if defined $default_wpscript;
+
+my $default_setperm = $config->{"engine-conf"}->{"SetPerm"};
+$default_setperm = trim($defaul) if defined $default_setperm;
+
 my $magic = File::LibMagic->new();
 
 print BOLD RED "[$hostname]: Git is not installed !!!\n" unless (-e $git);
@@ -325,6 +331,8 @@ my @wp_files = ();
 			}
 		}
 
+		$config->{$project}->{"WPscripts"} = $default_wpscript
+			if not defined $config->{$project}->{"WPscripts"};
 		if ($config->{$project}->{"WPscripts"} eq "on") {
 			# Execute the WordPress script 
 			log_this(\@buffer,  "		Searching for WordPress script ...");
@@ -338,6 +346,8 @@ my @wp_files = ();
 		}
 
         my $perm_file_found = 0;
+		$config->{$project}->{"SetPerm"} = $default_setperm
+			if not defined $config->{$project}->{"SetPerm"};
 		if ( $config->{$project}->{"SetPerm"} eq "on") {
 			# Set the file permissions :
 			log_this(\@buffer,  "		Searching for permission map file...");
