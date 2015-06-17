@@ -92,55 +92,55 @@ my $OUTHANDLER;
 
 my $config = Config::Auto::parse();
         #print Dumper($config);
-my $git 	= trim($config->{"engine-conf"}->{"git"});
-my $mysql 	= trim($config->{"engine-conf"}->{"mysql"});
-my $errors_file = trim($config->{"engine-conf"}->{"error_file"});
-my $hostname	= trim($config->{"engine-conf"}->{"hostname"});
+my $git 	= trimperso($config->{"engine-conf"}->{"git"});
+my $mysql 	= trimperso($config->{"engine-conf"}->{"mysql"});
+my $errors_file = trimperso($config->{"engine-conf"}->{"error_file"});
+my $hostname	= trimperso($config->{"engine-conf"}->{"hostname"});
 my $smtp = ();
-$smtp->{Host}	= trim($config->{"engine-conf"}->{"smtp"});
-$smtp->{Sender}	= trim($config->{"engine-conf"}->{"smtp_from"});
+$smtp->{Host}	= trimperso($config->{"engine-conf"}->{"smtp"});
+$smtp->{Sender}	= trimperso($config->{"engine-conf"}->{"smtp_from"});
 
 if (defined $config->{"engine-conf"}->{"smtp_method"}) {
-	$smtp->{Proto} = trim($config->{"engine-conf"}->{"smtp_method"})
+	$smtp->{Proto} = trimperso($config->{"engine-conf"}->{"smtp_method"})
 }
 else {
 	$smtp->{Proto} = "NONE";
 }
 
 if (defined $config->{"engine-conf"}->{"smtp_port"}) {
-	$smtp->{Port} = trim($config->{"engine-conf"}->{"smtp_port"})
+	$smtp->{Port} = trimperso($config->{"engine-conf"}->{"smtp_port"})
 }
 else {
 	$smtp->{Port} = 25;
 }
 
 if ($smtp->{Proto} ne "NONE"){
-	$smtp->{AuthUser} 	= trim($config->{"engine-conf"}->{"smtp_user"});
-	$smtp->{AuthPass}	= trim($config->{"engine-conf"}->{"smtp_pass"});
+	$smtp->{AuthUser} 	= trimperso($config->{"engine-conf"}->{"smtp_user"});
+	$smtp->{AuthPass}	= trimperso($config->{"engine-conf"}->{"smtp_pass"});
 }
 
 my $default_protect_elf = $config->{"engine-conf"}->{"protect_elf"};
 $default_protect_elf = 0 unless defined $default_protect_elf;
-$default_protect_elf = lc(trim($default_protect_elf));
+$default_protect_elf = lc(trimperso($default_protect_elf));
 $default_protect_elf = "on" if ($default_protect_elf =~ /1|on|true/);
 
 my $default_protect_ext_str = $config->{"engine-conf"}->{"protect_ext"};
 my @default_protect_ext = ();
-@default_protect_ext = map({ trim($_) } split(/,/, $default_protect_ext_str)) if $default_protect_ext_str;
+@default_protect_ext = map({ trimperso($_) } split(/,/, $default_protect_ext_str)) if $default_protect_ext_str;
 
 my $default_ensure_readable = $config->{"engine-conf"}->{"ensure_readable"};
 $default_ensure_readable = 0 unless defined $default_ensure_readable;
-$default_ensure_readable = lc(trim($default_ensure_readable));
+$default_ensure_readable = lc(trimperso($default_ensure_readable));
 $default_ensure_readable = "on" if ($default_ensure_readable =~ /1|on|true/);
 
 my $default_webserver_user = $config->{"engine-conf"}->{"webserver_user"};
-$default_webserver_user = trim($default_webserver_user) if defined $default_webserver_user;
+$default_webserver_user = trimperso($default_webserver_user) if defined $default_webserver_user;
 
 my $default_wpscript = $config->{"engine-conf"}->{"WPscripts"};
-$default_wpscript = trim($default_webserver_user) if defined $default_wpscript;
+$default_wpscript = trimperso($default_webserver_user) if defined $default_wpscript;
 
 my $default_setperm = $config->{"engine-conf"}->{"SetPerm"};
-$default_setperm = trim($default_setperm) if defined $default_setperm;
+$default_setperm = trimperso($default_setperm) if defined $default_setperm;
 
 my $magic = File::LibMagic->new();
 
@@ -162,7 +162,7 @@ my @wp_files = ();
 	my $project = "";
 
 	# Initializing "project" variable via shell args.
-	$project = $ARGV[0]."/".$ARGV[1] if(defined $ARGV[0] and defined $ARGV[1] and defined trim($config->{$ARGV[0]."/".$ARGV[1]}) );	
+	$project = $ARGV[0]."/".$ARGV[1] if(defined $ARGV[0] and defined $ARGV[1] and defined trimperso($config->{$ARGV[0]."/".$ARGV[1]}) );	
 
 	# Initializing "project" variable via GDS.
 	if (defined $config->{"$_PROJECT/$_BRANCH"}
@@ -177,43 +177,43 @@ my @wp_files = ();
 	}
 
 	# Loading the project settings
-	my $local_path  = trim($config->{$project}->{"local_project_path"});
-	my $depth       = trim($config->{$project}->{"depth"});
+	my $local_path  = trimperso($config->{$project}->{"local_project_path"});
+	my $depth       = trimperso($config->{$project}->{"depth"});
 	my $branch      = $_BRANCH;
-	my $git_url	= trim($config->{$project}->{"git_project"});
+	my $git_url	= trimperso($config->{$project}->{"git_project"});
 
-	my $db_host	= trim($config->{$project}->{"db_host"});
-	my $db_port	= trim($config->{$project}->{"db_port"});
-	my $db_name	= trim($config->{$project}->{"db_name"});
-	my $db_user	= trim($config->{$project}->{"db_user"});
-	my $db_pass	= trim($config->{$project}->{"db_pass"});
+	my $db_host	= trimperso($config->{$project}->{"db_host"});
+	my $db_port	= trimperso($config->{$project}->{"db_port"});
+	my $db_name	= trimperso($config->{$project}->{"db_name"});
+	my $db_user	= trimperso($config->{$project}->{"db_user"});
+	my $db_pass	= trimperso($config->{$project}->{"db_pass"});
 
-	my $contact	= trim($config->{$project}->{"contact"});
+	my $contact	= trimperso($config->{$project}->{"contact"});
 
-    my $git_user = trim($config->{$project}->{"git_user"});
-    my $git_email = trim($config->{$project}->{"git_email"});
+    my $git_user = trimperso($config->{$project}->{"git_user"});
+    my $git_email = trimperso($config->{$project}->{"git_email"});
 
-	my $sysuser	= trim($config->{$project}->{"sysuser"});
+	my $sysuser	= trimperso($config->{$project}->{"sysuser"});
 
     my $protect_elf = $config->{$project}->{"protect_elf"};
     $protect_elf = $default_protect_elf unless defined $protect_elf;
     $protect_elf = 0 unless defined $protect_elf;
-    $protect_elf = lc(trim($protect_elf));
+    $protect_elf = lc(trimperso($protect_elf));
     $protect_elf = ($protect_elf =~ /1|on|true/);
 
     my $protect_ext_str = $config->{$project}->{"protect_ext"};
     my @protect_ext = @default_protect_ext;
-    @protect_ext = map({ trim($_) } split(/,/, $protect_ext_str)) if $protect_ext_str;
+    @protect_ext = map({ trimperso($_) } split(/,/, $protect_ext_str)) if $protect_ext_str;
 
     my $ensure_readable = $config->{$project}->{"ensure_readable"};
     $ensure_readable = $default_ensure_readable unless defined $ensure_readable;
     $ensure_readable = 0 unless defined $ensure_readable;
-    $ensure_readable = lc(trim($default_ensure_readable));
+    $ensure_readable = lc(trimperso($default_ensure_readable));
     $ensure_readable = ($default_ensure_readable =~ /1|on|true/);
 
     my $webserver_user = $config->{$project}->{"webserver_user"};
     $webserver_user = $default_webserver_user unless defined $webserver_user;
-    $webserver_user = trim($webserver_user) if defined $webserver_user;
+    $webserver_user = trimperso($webserver_user) if defined $webserver_user;
 
 	if ($local_path eq ""){
 		print BOLD GREEN "[$hostname]: ";
@@ -492,7 +492,7 @@ sub get_group_ids {
             next;
         }
         next unless $members;
-        my @memberlist = map({ trim($_) } split(/\s+/, $members));
+        my @memberlist = map({ trimperso($_) } split(/\s+/, $members));
         if(@memberlist and grep(/^\Q$user_name\E$/, @memberlist)) {
             push(@groups, $gid);
         }
@@ -743,7 +743,7 @@ sub read_file {
         return @lines;
 }
 
-sub trim
+sub trimperso
 {
     my @out = @_;
     for (@out)
