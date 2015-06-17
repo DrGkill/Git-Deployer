@@ -140,7 +140,7 @@ my $default_wpscript = $config->{"engine-conf"}->{"WPscripts"};
 $default_wpscript = trim($default_webserver_user) if defined $default_wpscript;
 
 my $default_setperm = $config->{"engine-conf"}->{"SetPerm"};
-$default_setperm = trim($defaul) if defined $default_setperm;
+$default_setperm = trim($default_setperm) if defined $default_setperm;
 
 my $magic = File::LibMagic->new();
 
