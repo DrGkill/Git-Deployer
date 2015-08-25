@@ -208,8 +208,8 @@ my @wp_files = ();
     my $ensure_readable = $config->{$project}->{"ensure_readable"};
     $ensure_readable = $default_ensure_readable unless defined $ensure_readable;
     $ensure_readable = 0 unless defined $ensure_readable;
-    $ensure_readable = lc(trimperso($default_ensure_readable));
-    $ensure_readable = ($default_ensure_readable =~ /1|on|true/);
+    $ensure_readable = lc(trimperso($ensure_readable));
+    $ensure_readable = ($ensure_readable =~ /1|on|true/);
 
     my $webserver_user = $config->{$project}->{"webserver_user"};
     $webserver_user = $default_webserver_user unless defined $webserver_user;
