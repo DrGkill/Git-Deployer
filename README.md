@@ -141,6 +141,11 @@ $ vim GDS.config
 	SetPerm = off
 
 	sysuser = git
+	
+	# Ensure any local handmade changes will not 
+	# block the pull process
+	# WARNING: THIS WILL EREASE ANY LOCAL CHANGES
+	reset_hard = on
 
     #example of override
     webserver_user = apache

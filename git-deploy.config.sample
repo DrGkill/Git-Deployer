@@ -35,6 +35,8 @@
 
 	WPscripts = off
 	SetPerm = off
+	
+	reset_hard = on
 
 	sysuser = git
 
