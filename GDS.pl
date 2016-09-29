@@ -150,7 +150,16 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 						
 						print BOLD GREEN "[$hostname]: ";
 						print BOLD WHITE "Launching Git Deployer...\n";
-						require "$gitdeployer";
+                        eval {
+    						require "$gitdeployer";
+                            1;
+                        } or do {
+                            my $error = $@;
+                            print LOGFILE "Error: $error\n";
+                            print BOLD RED "Error: ";
+                            print RED "$error";                            
+                            print RESET "\r\n";
+                        }
 						
 						# restore the stdout
 						select($standard_out);
