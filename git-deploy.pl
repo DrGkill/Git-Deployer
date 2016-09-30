@@ -340,7 +340,7 @@ my @wp_files = ();
 
 		$config->{$project}->{"WPscripts"} = $default_wpscript
 			if not defined $config->{$project}->{"WPscripts"};
-		if ($config->{$project}->{"WPscripts"} eq "on") {
+		if (is_on($config->{$project}->{"WPscripts"})) {
 			# Execute the WordPress script 
 			log_this(\@buffer,  "		Searching for WordPress script ...");
 			find({wanted => \&WPfile, untaint => 1}, "$local_path");
@@ -355,7 +355,7 @@ my @wp_files = ();
         my $perm_file_found = 0;
 		$config->{$project}->{"SetPerm"} = $default_setperm
 			if not defined $config->{$project}->{"SetPerm"};
-		if ( $config->{$project}->{"SetPerm"} eq "on") {
+		if (is_on($config->{$project}->{"SetPerm"})) {
 			# Set the file permissions :
 			log_this(\@buffer,  "		Searching for permission map file...");
 			find({wanted => \&PERMfile, untaint => 1}, "$local_path");
@@ -761,3 +761,17 @@ sub trimperso
     }
     return wantarray ? @out : $out[0];
 }
+
+sub is_on {
+        my $input = shift;
+        my $default = shift;
+        $default = 0 unless defined($default);
+
+        return 0 unless defined($input);
+        return 1 if $input =~ /on|ok|1|y|yes|true/i;
+        return 0 if $input =~ /off|0|no|false/i;
+        return $default;
+}
+
+1;
+
