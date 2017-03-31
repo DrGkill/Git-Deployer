@@ -159,7 +159,7 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
                             print BOLD RED "Error: ";
                             print RED "$error";                            
                             print RESET "\r\n";
-                        }
+                        };
 						
 						# restore the stdout
 						select($standard_out);
