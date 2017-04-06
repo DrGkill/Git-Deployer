@@ -77,6 +77,7 @@ $debug 		= 1 if (trim($config->{"engine-conf"}->{"debug_mode"}) eq "on");
 
 		# Open the log file
 		$LOG_file = $opts{l} if defined $opts{l};
+		chmod 0777, $LOG_file;
 		open(LOGFILE, ">>", $LOG_file) or die "Unable to open ".$LOG_file;
 		$standard_out = select(LOGFILE);
 	}
