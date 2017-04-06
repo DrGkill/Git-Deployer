@@ -196,6 +196,10 @@ my @wp_files = ();
 
 	my $sysuser	= trimperso($config->{$project}->{"sysuser"});
 	
+	close(STDERR);
+	$errors_file = $errors_file.".".$sysuser;
+	open (STDERR,">$errors_file");
+	
 	my $reset_hard = 0;
 	$reset_hard = trimperso($config->{$project}->{"reset_hard"}) if defined $config->{$project}->{"reset_hard"};
 
